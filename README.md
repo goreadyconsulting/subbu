@@ -38,7 +38,7 @@ Create Kittu's account in **Supabase Dashboard → Authentication → Users → 
 - Password: choose the private password agreed by the two users; do not place it in the repository
 - Enable **Auto Confirm User**, because the demonstration email may not be able to receive messages.
 
-On Kittu's first successful login, the server-side `activate_kittu_membership()` function verifies the Auth user's ID, confirmed email and the exact approved address before assigning the `kittu` admin role. No additional RLS edits are required.
+After creating Kittu's account, bind the new Auth user's UUID to the admin role with a restricted, server-side database update. Do not grant a privileged role based on an email claim alone; the website intentionally does not support public admin registration.
 
 Both users have private personal task, message, request and notification centers. Kittu can select existing photos/videos when creating a task. Media titles are never shown in the gallery; `memory_entries` only permits the author to read their entry, and `get_memory_reveals()` only returns the complete two-person exchange after both messages exist.
 
