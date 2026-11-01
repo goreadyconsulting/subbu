@@ -135,12 +135,11 @@ function storyMoment(filename, note) {
   if (!photo) return "";
   const video = isVideo(photo);
   const title = memoryCaption(photo);
-  return `<button class="story-moment" data-action="view-photo" data-id="${esc(photo.id)}" aria-label="${video ? "Play" : "View"} ${esc(title)}">
+  return `<button class="story-moment" data-action="view-photo" data-id="${esc(photo.id)}" aria-label="Open a private memory">
     <div class="story-moment-media">${video
       ? '<div class="story-video-art" aria-hidden="true">▶</div>'
-      : `<img src="${esc(state.photoUrls[photo.id] || "")}" alt="${esc(title)}" loading="lazy" decoding="async" data-private-media="${esc(photo.storage_path)}">`}</div>
-    <span class="story-moment-name">${esc(title)} ${video ? "↗" : "♡"}</span>
-    <small>${esc(note)}</small>
+      : `<img src="${esc(state.photoUrls[photo.id] || "")}" alt="A private memory" loading="lazy" decoding="async" data-private-media="${esc(photo.storage_path)}">`}</div>
+    <span class="duo-photo-hint">♡ Open memory</span>
   </button>`;
 }
 function loginPage() {
@@ -248,7 +247,7 @@ function home() {
     </div>
     ${moments ? `<section class="birthday-story-section"><div class="birthday-section-caption">
       <span class="eyebrow">TINY CHAPTERS, BIG FEELINGS</span><h2>And a few moments <em>along the way.</em></h2>
-      <p>Little pieces of our story, exactly how I named and remember them.</p></div>
+      <p>Little pieces of our story, waiting for both our words. ♡</p></div>
       <div class="birthday-story-strip">${moments}</div>
       <button class="birthday-subtle-link" data-action="view" data-view="gallery">All our photos and videos live in Memories ↗</button></section>` : ""}
     <section class="birthday-sky-section">
@@ -278,20 +277,11 @@ function memoryCaption(p) {
   return isVideo(p) ? "a little film ♡" : "a little moment ♡";
 }
 function photoCard(p) {
-  const video = isVideo(p);
-  const caption = memoryCaption(p);
-  const visual = video
-    ? `<div class="video-preview" aria-hidden="true">
-        <div class="filmstrip top"></div>
-        <div class="video-play-icon">▶</div>
-        <div class="video-type-label">A little film · MP4</div>
-        <div class="filmstrip bottom"></div>
-      </div>`
-    : `<img loading="lazy" alt="${esc(p.caption || "A saved memory")}" src="${esc(state.photoUrls[p.id] || "")}" data-private-media="${esc(p.storage_path)}">`;
-  return `<button class="photo-card" data-action="view-photo" data-id="${esc(p.id)}" aria-label="${video ? "Play" : "View"} ${esc(caption)}">
-    ${visual}
-    <span class="photo-caption">${esc(caption)}</span>
-    <span class="photo-date">${fmt(p.created_at)}</span></button>`;
+ const visual=isVideo(p)
+  ? `<div class="video-preview" aria-hidden="true"><div class="filmstrip top"></div><div class="video-play-icon">▶</div><div class="filmstrip bottom"></div></div>`
+  : `<img loading="lazy" alt="A private photo" src="${esc(state.photoUrls[p.id]||"")}" data-private-media="${esc(p.storage_path)}">`;
+ return `<button class="photo-card duo-photo-tile" data-action="view-photo" data-id="${esc(p.id)}"
+   aria-label="Open a private memory">${visual}<span class="duo-photo-hint">♡ Open memory</span></button>`;
 }
 function gallery() {
   const videos = state.photos.filter(isVideo).length;
@@ -299,7 +289,7 @@ function gallery() {
   return `<section>
     <div class="page-heading"><div><span class="eyebrow">01 / your memories</span>
       <h1 class="page-title">Memory <em>diary.</em></h1>
-      <p>A cosy little home for the photos and videos you want to keep.</p></div>
+      <p>Our photos and little films have no titles yet. Tap a memory and write your half; both messages unlock together. ♡</p></div>
       <button type="button" class="button button-outline button-small" data-action="refresh-media" style="margin-right:8px">↻ Refresh</button>
       <label class="button button-dark file-button">+ Add memories
         <input type="file" id="photo-upload" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,.mp4" multiple aria-label="Upload photos and videos"></label>
@@ -698,24 +688,8 @@ function activityEditor() {
     </form>`);
 }
 function photoViewer(id) {
-  const p = state.photos.find(x => x.id === id);
-  if (!p) return;
-  const video = isVideo(p);
-  const media = video
-    ? `<video class="modal-photo modal-video" controls preload="metadata" playsinline src="${esc(state.photoUrls[p.id] || "")}">
-        Your browser cannot play this video.
-      </video>`
-    : `<img class="modal-photo" src="${esc(state.photoUrls[p.id] || "")}" alt="${esc(p.caption || "Saved photograph")}" data-private-media="${esc(p.storage_path)}">`;
-  openModal(`<span class="eyebrow">A moment worth keeping</span><h2>Memory lane ♡</h2>
-    ${media}
-    <form data-form="save-caption" data-id="${esc(p.id)}">
-      <label class="form-label" for="photo-caption">Give this ${video ? "video" : "memory"} a caption</label>
-      <input class="field" name="caption" id="photo-caption" maxlength="400" placeholder="The day I…" value="${esc(p.caption)}">
-      <div class="modal-actions">
-        <button type="button" class="button button-outline" data-action="delete-photo" data-id="${esc(p.id)}">Remove ${video ? "video" : "photo"}</button>
-        <button class="button button-dark" type="submit">Save caption</button>
-      </div>
-    </form>`, true);
+  const media=state.photos.find(p=>p.id===id);
+  if(media)return duoOpen(media.storage_path);
 }
 async function uploadPhotos(files) {
   if (!files.length || !state.owner) return;
