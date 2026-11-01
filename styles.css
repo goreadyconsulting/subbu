@@ -219,3 +219,26 @@ textarea.field{resize:vertical;min-height:180px}
 .nav-button{padding:7px 6px}.hero h1{font-size:53px}.collage{transform:scale(.65);height:348px}.gallery-grid,.note-grid{grid-template-columns:1fr}.photo-card img{height:270px}.video-preview{height:270px}.button{padding:11px 15px}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+
+/* A tiny mixtape */
+.songs-layout{display:grid;grid-template-columns:minmax(275px,.84fr) minmax(320px,1.16fr);gap:24px;align-items:start}
+.song-player-card{background:#fffdfb;border:1px solid #eee5df;border-radius:25px;padding:27px;box-shadow:var(--shadow);text-align:center}
+.song-player-card h2{font-size:clamp(26px,3vw,35px);margin-bottom:9px;overflow-wrap:anywhere}
+.song-art{width:100%;aspect-ratio:1.45;background:radial-gradient(circle at 30% 20%,#f8e9e2 0 12%,transparent 13%),radial-gradient(circle at 73% 65%,#ebd9ed 0 23%,transparent 24%),linear-gradient(145deg,#f6d6dc,#f1dfdf 60%,#f8e5d4);border-radius:20px;display:flex;align-items:center;justify-content:center;flex-direction:column;position:relative;overflow:hidden}
+.song-art:before{content:"";position:absolute;width:175px;height:175px;border:25px solid #fffaf8a0;border-radius:50%;transform:rotate(-30deg);right:-80px;top:-65px}
+.song-art span{font-family:var(--serif);font-size:125px;color:#a77998;line-height:1;z-index:1;text-shadow:3px 6px #ffffff73}
+.song-art small{font:400 18px var(--hand);color:#865e80;z-index:1}
+.song-player-buttons{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:18px}
+.songs-list{background:#fffdfb;border:1px solid var(--line);border-radius:24px;padding:24px 17px;min-height:310px}
+.song-item{display:flex;align-items:center;border-top:1px solid #f1e9e4;border-radius:10px;transition:background .2s}
+.song-item:first-of-type{border-top:0}
+.song-item:hover,.song-item.selected{background:#fbf0f0}
+.song-select{display:flex;align-items:center;gap:13px;min-width:0;flex:1;background:transparent;border:0;text-align:left;color:var(--ink);padding:17px 12px}
+.song-number{font:400 17px var(--serif);width:25px;flex-shrink:0;color:#b48797}
+.song-name{font-weight:600;font-size:13px;overflow-wrap:anywhere;min-width:0}
+.song-format{margin-left:auto;font-size:10px;letter-spacing:.08em;color:#aa9a9d}
+.song-delete{padding:9px;margin-right:5px;flex-shrink:0}
+@media(max-width:1050px){.songs-layout{grid-template-columns:1fr}.song-player-card{max-width:640px}.song-art{aspect-ratio:2;max-height:250px}}
+@media(max-width:760px){.songs-layout{gap:17px}.song-player-card{padding:20px}.song-art{aspect-ratio:1.6}.songs-list{padding:18px 10px}.song-select{padding:15px 9px}}
+@media(max-width:410px){.sidebar-brand{font-size:19px}.nav-button{padding:7px 4px}.song-art span{font-size:90px}}
