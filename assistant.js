@@ -8,12 +8,12 @@ root.hidden = true;
 root.setAttribute("aria-label", "Sir Meowsalot assistant");
 root.innerHTML = `
   <button id="catbot-launch" type="button" aria-expanded="false" aria-controls="catbot-panel" aria-label="Chat with Sir Meowsalot">
-    <img src="./assets/sir-meowsalot.svg" alt="Tiny cat knight holding a sword">
+    <img src="./assets/sir-meowsalot.webp" alt="Tiny cat knight holding a sword">
     <span class="catbot-twinkle" aria-hidden="true">✦</span>
   </button>
   <section id="catbot-panel" role="dialog" aria-label="Sir Meowsalot chat" aria-modal="false" hidden>
     <div class="catbot-header">
-      <img src="./assets/sir-meowsalot.svg" alt="" class="catbot-head-avatar">
+      <img src="./assets/sir-meowsalot.webp" alt="" class="catbot-head-avatar">
       <div class="catbot-heading"><strong>Sir Meowsalot</strong>
         <small>your tiny, very brave knight ⚔</small></div>
       <button type="button" id="catbot-close" aria-label="Close chat">×</button>
