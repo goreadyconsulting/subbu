@@ -1,0 +1,33 @@
+
+/* Sir Meowsalot, your tiny knight */
+#catbot-root[hidden],#catbot-panel[hidden]{display:none!important}
+#catbot-root{position:fixed;bottom:22px;right:22px;z-index:120;pointer-events:none}
+#catbot-launch,#catbot-panel{pointer-events:auto}
+#catbot-launch{position:relative;width:78px;height:78px;border:5px solid #fffdfb;box-shadow:0 12px 40px #4c34484a;background:#f4dde1;border-radius:50%;padding:0;overflow:visible;transition:transform .2s}
+#catbot-launch:hover{transform:translateY(-5px) rotate(-4deg)}
+#catbot-launch img{width:100%;height:100%;object-fit:cover;object-position:center center;border-radius:50%;display:block}
+.catbot-twinkle{position:absolute;top:-11px;right:-5px;background:#b77b8f;color:white;border:2px solid white;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;line-height:1}
+#catbot-panel{position:absolute;right:0;bottom:90px;width:min(385px,calc(100vw - 24px));height:min(590px,calc(100dvh - 130px));display:flex;flex-direction:column;background:#fffdfb;border:1px solid #ecdde2;border-radius:25px;box-shadow:0 24px 70px #4d354f4a;overflow:hidden}
+.catbot-header{display:flex;gap:12px;align-items:center;padding:14px 18px;background:linear-gradient(118deg,#f6dfdf,#eee5f3);border-bottom:1px solid #eedee5}
+.catbot-head-avatar{width:48px;height:48px;object-fit:cover;border:3px solid #fffdfb;border-radius:50%;box-shadow:0 2px 10px #79617018}
+.catbot-heading{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.35}
+.catbot-heading strong{font:400 23px var(--serif);color:#5f485c}
+.catbot-heading small{font:400 12px var(--hand);color:#9b718c}
+#catbot-close{border:0;background:#fffafa9c;color:#7c6372;border-radius:50%;font-size:24px;width:34px;height:34px;line-height:1}
+#catbot-scroll{flex:1;min-height:0;padding:19px 16px;overflow-y:auto;background:radial-gradient(circle at 93% 8%,#f8eeeb,transparent 34%),#fffdfa}
+.catbot-bubble{max-width:86%;width:fit-content;margin-bottom:12px;padding:12px 14px;border-radius:17px;line-height:1.65;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}
+.catbot-bubble.bot{background:#f5e9e7;color:#5b4851;border-radius:17px 17px 17px 5px}
+.catbot-bubble.user{margin-left:auto;background:#e9dfee;color:#5d4b65;border-radius:17px 17px 5px 17px}
+.catbot-bubble.thinking,.catbot-bubble.notice{background:#f7f2ec;color:#927984;font-style:italic}
+.catbot-suggestions{padding:11px 12px 7px;display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid #f0e7e7}
+.catbot-suggestions button{border:1px solid #e6d0d5;background:#fffaf9;color:#987184;font-size:11px;border-radius:20px;padding:6px 10px}
+.catbot-suggestions button:hover{background:#f9e9ee}
+#catbot-form{display:flex;align-items:center;gap:8px;padding:9px 12px 4px}
+#catbot-input{flex:1;min-width:0;max-height:100px;min-height:45px;resize:none;background:#fff;border:1px solid #e6d7dc;border-radius:14px;padding:11px 12px;line-height:1.4;font-size:13px;color:var(--ink)}
+#catbot-input:focus{outline:2px solid #e4bac6;outline-offset:1px}
+#catbot-send{height:43px;width:43px;border:0;border-radius:13px;background:#6a4f62;color:white;font-size:21px;display:grid;place-items:center;flex-shrink:0}
+#catbot-send:disabled{opacity:.5}
+.catbot-footnote{font-size:10px;color:#a494a1;text-align:center;margin:0;padding:3px 10px 13px}
+.catbot-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+@media(max-width:760px){#catbot-root{right:12px;bottom:14px}#catbot-launch{width:68px;height:68px}#catbot-panel{bottom:79px;height:min(510px,calc(100dvh - 113px));width:min(375px,calc(100vw - 24px))}}
+@media(prefers-reduced-motion:reduce){#catbot-launch{transition:none}}
