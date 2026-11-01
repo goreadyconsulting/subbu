@@ -92,7 +92,7 @@ export async function duoOpen(path){
 }
 export async function duoClick(button){
  const a=button.dataset.duoAction,s=C.supabase;
- if(a==="memory"){await duoOpen(button.dataset.path);return;}
+ if(a==="memory"){await duoLoad();await duoOpen(button.dataset.path);return;}
  if(a==="refresh"){await duoLoad();C.render();C.toast("Up to date ♡");return;}
  if(a==="all"){const xs=[...button.closest("form").querySelectorAll('input[name="media"]')],all=xs.some(x=>!x.checked);xs.forEach(x=>x.checked=all);button.textContent=all?"Clear all":"Select all";return;}
  if(a==="finish"){const {data,error}=await s.rpc("complete_assigned_task",{task_id:button.dataset.id});if(error)throw error;if(!data){C.toast("Write all your assigned messages first.");return;}}
