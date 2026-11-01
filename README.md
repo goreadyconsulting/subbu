@@ -5,8 +5,8 @@ A birthday surprise that becomes Charitha's private personal website.
 ## Features
 
 - Birthday homepage and **private birthday letter** (letter stored in Supabase; not in public source)
-- Photo diary that discovers images from Supabase Storage automatically, including nested folders
-- Gallery captioning and photo removal, even for pictures uploaded directly in Supabase
+- Memory diary that discovers photos and MP4 videos from private Supabase Storage automatically, including nested folders
+- Gallery captioning, private MP4 playback, and media removal, including files uploaded directly in Supabase
 - Private notes (create, edit, pin, delete)
 - Optional daily ritual check-ins
 - Email-and-password login with a one-time private owner claim
@@ -31,10 +31,10 @@ The GitHub Pages workflow is in `.github/workflows/deploy.yml`.
 
 1. Open **Supabase → Storage → charitha-gallery**.
 2. Keep the bucket **private** (do not make it public).
-3. Upload JPEG, PNG, WebP, GIF, or AVIF images directly into the bucket. The bucket root works; folders work too (for example `memories/`).
-4. Once the owner signs in to the website, **Photo diary** discovers these images by path automatically. No SQL INSERT into `public.photos` is required. You can later add photo captions within the site.
+3. Upload JPG, PNG, WebP, GIF, AVIF or MP4 files directly into the bucket. The bucket root works; folders work too (for example `memories/` or `videos/`).
+4. Once the owner signs in to the website, **Memories** discovers these images and MP4 clips automatically. No SQL INSERT into `public.photos` is required. She can play videos and add captions inside the site.
 
-The bucket has a 10 MB per-file limit. If you delete a picture from Supabase Storage, it disappears from the gallery on the next data refresh/sign-in.
+Website uploads allow images up to 10 MB and MP4 videos up to 50 MB; the actual Supabase project-wide file-size limit also applies (Free plan: maximum 50 MB). The bucket remains private. For larger videos, check the project plan and global Storage limit, and prefer dashboard/resumable upload. MP4s encoded with H.264 video and AAC audio offer the broadest browser compatibility. If you delete a file from Supabase Storage, it disappears from the diary on the next sign-in or data refresh.
 
 ## Architecture
 
