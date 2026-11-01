@@ -3,7 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0?bundle
 
 const supabase = createClient(
   "https://mmheljndcdhzzuobjaxz.supabase.co",
-  "sb_publishable_r0_1AHq4VCNCcjRwJnFJeQ_eHSmnX3d"
+  "sb_publishable_r0_1AHq4VCNCcjRwJnFJeQ_eHSmnX3d",
+  { auth: { persistSession: false, autoRefreshToken: true, detectSessionInUrl: false } }
 );
 const app = document.getElementById("app");
 const modalRoot = document.getElementById("modal-root");
