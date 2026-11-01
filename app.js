@@ -198,29 +198,43 @@ function home() {
        <button class="text-button" style="display:block;margin-top:9px" data-action="view" data-view="gallery">Add a photograph →</button></div>`}
   </section>`;
 }
+function isVideo(p) {
+  return /\.mp4$/i.test(p.storage_path || "");
+}
 function photoCard(p) {
-  return `<button class="photo-card" data-action="view-photo" data-id="${esc(p.id)}">
-    <img loading="lazy" alt="${esc(p.caption || "A saved memory")}" src="${esc(state.photoUrls[p.id] || "")}">
-    <span class="photo-caption">${esc(p.caption || "a little moment ♡")}</span>
+  const video = isVideo(p);
+  const visual = video
+    ? `<div class="video-preview" aria-hidden="true">
+        <div class="filmstrip top"></div>
+        <div class="video-play-icon">▶</div>
+        <div class="video-type-label">A little film · MP4</div>
+        <div class="filmstrip bottom"></div>
+      </div>`
+    : `<img loading="lazy" alt="${esc(p.caption || "A saved memory")}" src="${esc(state.photoUrls[p.id] || "")}">`;
+  return `<button class="photo-card" data-action="view-photo" data-id="${esc(p.id)}" aria-label="${video ? "Play" : "View"} ${esc(p.caption || (video ? "a saved video" : "a saved photo"))}">
+    ${visual}
+    <span class="photo-caption">${esc(p.caption || (video ? "a little film ♡" : "a little moment ♡"))}</span>
     <span class="photo-date">${fmt(p.created_at)}</span></button>`;
 }
 function gallery() {
+  const videos = state.photos.filter(isVideo).length;
+  const photos = state.photos.length - videos;
   return `<section>
     <div class="page-heading"><div><span class="eyebrow">01 / your memories</span>
-      <h1 class="page-title">Photo <em>diary.</em></h1>
-      <p>A cosy little home for the memories you want to keep.</p></div>
-      <label class="button button-dark file-button">+ Add photos
-        <input type="file" id="photo-upload" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple aria-label="Upload photos"></label>
+      <h1 class="page-title">Memory <em>diary.</em></h1>
+      <p>A cosy little home for the photos and videos you want to keep.</p></div>
+      <label class="button button-dark file-button">+ Add memories
+        <input type="file" id="photo-upload" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,.mp4" multiple aria-label="Upload photos and videos"></label>
     </div>
-    ${state.photos.length ? `<p class="muted photo-collection">${state.photos.length} lovely moment${state.photos.length === 1 ? "" : "s"} kept ♡</p>
+    ${state.photos.length ? `<p class="muted photo-collection">${photos} photo${photos === 1 ? "" : "s"} · ${videos} video${videos === 1 ? "" : "s"} kept ♡</p>
       <div class="gallery-grid">${state.photos.map(photoCard).join("")}</div>` :
     `<div class="empty-state"><div class="illustration">▧</div>
-      <h3>Every picture tells a story.</h3>
-      <p>What shall we keep first? Your gallery is private, and every photo is yours to add or remove.</p>
-      <label class="button button-pink file-button">Choose your first photos
-        <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple aria-label="Upload your first photos"></label>
+      <h3>Every moment tells a story.</h3>
+      <p>What shall we keep first? Your gallery is private, and every photo or video is yours to add or remove.</p>
+      <label class="button button-pink file-button">Choose your first memories
+        <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,.mp4" multiple aria-label="Upload your first photos or videos"></label>
     </div>`}
-    <p class="mini-hint">Private gallery · JPG, PNG, WebP, GIF or AVIF · Up to 10 MB per photo</p>
+    <p class="mini-hint">Private gallery · JPG, PNG, WebP, GIF, AVIF and MP4 · Up to 10 MB per photo or 50 MB per video (subject to project limits)</p>
   </section>`;
 }
 function notes() {
@@ -328,7 +342,7 @@ async function listPrivateGallery() {
         const fullPath = folder ? folder + "/" + entry.name : entry.name;
         if (entry.id == null) {
           pending.push(fullPath);
-        } else if (/\.(jpg|jpeg|png|webp|gif|avif)$/i.test(entry.name)) {
+        } else if (/\.(jpg|jpeg|png|webp|gif|avif|mp4)$/i.test(entry.name)) {
           objects.push({ storage_path: fullPath, created_at: entry.created_at });
         }
       }
@@ -430,46 +444,58 @@ function activityEditor() {
 function photoViewer(id) {
   const p = state.photos.find(x => x.id === id);
   if (!p) return;
+  const video = isVideo(p);
+  const media = video
+    ? `<video class="modal-photo modal-video" controls preload="metadata" playsinline src="${esc(state.photoUrls[p.id] || "")}">
+        Your browser cannot play this video.
+      </video>`
+    : `<img class="modal-photo" src="${esc(state.photoUrls[p.id] || "")}" alt="${esc(p.caption || "Saved photograph")}">`;
   openModal(`<span class="eyebrow">A moment worth keeping</span><h2>Memory lane ♡</h2>
-    <img class="modal-photo" src="${esc(state.photoUrls[p.id] || "")}" alt="${esc(p.caption || "Saved photograph")}">
+    ${media}
     <form data-form="save-caption" data-id="${esc(p.id)}">
-      <label class="form-label" for="photo-caption">Give this memory a caption</label>
+      <label class="form-label" for="photo-caption">Give this ${video ? "video" : "memory"} a caption</label>
       <input class="field" name="caption" id="photo-caption" maxlength="400" placeholder="The day I…" value="${esc(p.caption)}">
       <div class="modal-actions">
-        <button type="button" class="button button-outline" data-action="delete-photo" data-id="${esc(p.id)}">Remove photo</button>
+        <button type="button" class="button button-outline" data-action="delete-photo" data-id="${esc(p.id)}">Remove ${video ? "video" : "photo"}</button>
         <button class="button button-dark" type="submit">Save caption</button>
       </div>
     </form>`, true);
 }
 async function uploadPhotos(files) {
   if (!files.length || !state.owner) return;
-  const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
-  const valid = files.filter(f => allowed.includes(f.type) && f.size <= 10 * 1024 * 1024);
-  if (valid.length !== files.length) toast("Some photos were skipped (format or 10 MB limit).");
+  const imageTypes = {
+    "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp",
+    "image/gif": "gif", "image/avif": "avif"
+  };
+  const kind = f => f.type === "video/mp4" || (/\.mp4$/i.test(f.name) && !f.type)
+    ? "video/mp4" : f.type;
+  const maxSize = f => kind(f) === "video/mp4" ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+  const valid = files.filter(f => (kind(f) === "video/mp4" || imageTypes[kind(f)]) && f.size <= maxSize(f));
+  if (valid.length !== files.length) toast("Some files were skipped. Use JPG/PNG/WebP/GIF/AVIF (10 MB) or MP4 (50 MB).");
   if (!valid.length) return;
   toast("Saving your lovely memories…");
   let uploaded = 0;
   for (const file of valid) {
-    const ext = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp",
-      "image/gif": "gif", "image/avif": "avif" })[file.type];
+    const type = kind(file);
+    const ext = type === "video/mp4" ? "mp4" : imageTypes[type];
     const path = state.session.user.id + "/" + crypto.randomUUID() + "." + ext;
     const up = await supabase.storage.from("charitha-gallery").upload(path, file,
-      { upsert: false, contentType: file.type, cacheControl: "3600" });
+      { upsert: false, contentType: type, cacheControl: "3600" });
     if (up.error) { toast("Upload failed: " + up.error.message); continue; }
     const row = await supabase.from("photos").insert({ storage_path: path, caption: "" });
     if (row.error) {
       await supabase.storage.from("charitha-gallery").remove([path]);
-      toast("Couldn't save photo details: " + row.error.message);
+      toast("Couldn't save media details: " + row.error.message);
       continue;
     }
     uploaded++;
   }
   await loadData();
-  if (uploaded) toast(uploaded + " photo" + (uploaded === 1 ? "" : "s") + " added to your diary ♡");
+  if (uploaded) toast(uploaded + " memor" + (uploaded === 1 ? "y" : "ies") + " added to your diary ♡");
 }
 async function removePhoto(id) {
   const p = state.photos.find(x => x.id === id);
-  if (!p || !confirm("Remove this photograph from your private gallery?")) return;
+  if (!p || !confirm("Remove this " + (isVideo(p) ? "video" : "photo") + " from your private gallery?")) return;
   const file = await supabase.storage.from("charitha-gallery").remove([p.storage_path]);
   if (file.error) throw file.error;
   if (p.metaId) {
