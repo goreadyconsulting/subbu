@@ -11,7 +11,7 @@ const toastEl = document.getElementById("toast");
 const state = {
   session: null, owner: false, view: "welcome", notes: [], photos: [],
   activities: [], logs: [], loginSent: false, authError: "",
-  claimError: "", loading: true, saving: false, photoUrls: {}, photoRecords: [], letter: ""
+  claimError: "", loading: true, saving: false, photoUrls: {}, photoRecords: [], letter: "", songs: [], songIndex: -1
 };
 let identityRevision = 0;
 let toastTimer;
@@ -136,6 +136,7 @@ function nav() {
   const entries = [
     ["home", "⌂", "My little world"],
     ["gallery", "▧", "Memories"],
+    ["songs", "♫", "Our songs"],
     ["notes", "✎", "Notes to self"],
     ["activities", "☼", "Daily rituals"],
     ["birthday", "♡", "Birthday letter"]
@@ -247,6 +248,125 @@ function gallery() {
     <p class="mini-hint">Private gallery · JPG, PNG, WebP, GIF, AVIF and MP4 · Up to 10 MB per photo or 50 MB per video (subject to project limits)</p>
   </section>`;
 }
+
+function songTitle(song) {
+  const leaf = (song.storage_path || "").split("/").pop() || "Untitled";
+  return leaf.replace(/\.mp3$/i,"").replace(/^\d{13}-/,"").replace(/[_-]+/g," ").trim().slice(0,100) || "Untitled";
+}
+function songs() {
+  const selected = state.songs[state.songIndex];
+  return `<section>
+    <div class="page-heading">
+      <div><span class="eyebrow">A soundtrack, just for you ♡</span>
+        <h1 class="page-title">Our <em>songs.</em></h1>
+        <p>The songs you want to keep close, all in one little place.</p>
+      </div>
+      <label class="button button-dark file-button">+ Add a song
+        <input type="file" data-media="songs" accept=".mp3,audio/mpeg,audio/mp3" multiple aria-label="Upload MP3 songs">
+      </label>
+    </div>
+    ${state.songs.length ? `
+      <div class="songs-layout">
+        <div class="song-player-card">
+          <div class="song-art" aria-hidden="true"><span>♫</span><small>your little mixtape</small></div>
+          <p class="eyebrow" style="margin:20px 0 7px">NOW PLAYING</p>
+          <h2 id="song-now-title">${selected ? esc(songTitle(selected)) : "Pick a song, lovely ♡"}</h2>
+          <p class="muted" style="font-size:12px">${state.songs.length} song${state.songs.length === 1 ? "" : "s"} in your playlist</p>
+          <audio id="song-audio" controls preload="none" controlsList="nodownload" style="width:100%;margin-top:12px" aria-label="Your music player"></audio>
+          <div class="song-player-buttons">
+            <button class="button button-light button-small" data-action="song-prev" aria-label="Previous song">← Previous</button>
+            <button class="button button-light button-small" data-action="song-next" aria-label="Next song">Next →</button>
+          </div>
+          <p class="mini-hint">Tap a song to play. Music stays private to your account.</p>
+        </div>
+        <div class="songs-list">
+          <div class="eyebrow" style="padding:0 8px 14px">THE PLAYLIST</div>
+          ${state.songs.map((song,i)=>`<div class="song-item ${state.songIndex===i?"selected":""}">
+            <button class="song-select" data-action="play-song" data-index="${i}" aria-label="Play ${esc(songTitle(song))}">
+              <span class="song-number">${state.songIndex===i?"♫":String(i+1).padStart(2,"0")}</span>
+              <span class="song-name">${esc(songTitle(song))}</span>
+              <span class="song-format">MP3</span>
+            </button>
+            <button class="delete-mini song-delete" data-action="delete-song" data-index="${i}" aria-label="Delete ${esc(songTitle(song))}" title="Delete song">×</button>
+          </div>`).join("")}
+        </div>
+      </div>` :
+      `<div class="empty-state">
+        <div class="illustration">♫</div><h3>Every story has a soundtrack.</h3>
+        <p>Fill this little music box with the songs that feel like you. Upload MP3s here or directly to Supabase.</p>
+        <label class="button button-pink file-button">Choose MP3 songs
+          <input type="file" data-media="songs" accept=".mp3,audio/mpeg,audio/mp3" multiple aria-label="Upload your first MP3 songs">
+        </label>
+      </div>`
+    }
+    <p class="mini-hint">Private MP3 files · up to 50 MB each, subject to your Supabase project limit</p>
+  </section>`;
+}
+async function listSongs() {
+  const bucket = supabase.storage.from("charitha-songs");
+  const pending = [""], results = [], visited = new Set();
+  while (pending.length) {
+    const folder = pending.shift();
+    if (visited.has(folder)) continue;
+    visited.add(folder);
+    let offset=0, batch=[];
+    do {
+      const {data,error}=await bucket.list(folder,{limit:100,offset,sortBy:{column:"name",order:"asc"}});
+      if(error)throw error;
+      batch=data||[];
+      for (const entry of batch) {
+        if(!entry.name || entry.name === ".emptyFolderPlaceholder")continue;
+        const path=folder?folder+"/"+entry.name:entry.name;
+        if(entry.id==null)pending.push(path);
+        else if(/\.mp3$/i.test(entry.name))results.push({storage_path:path,created_at:entry.created_at});
+      }
+      offset+=batch.length;
+    }while(batch.length===100);
+  }
+  return results.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+}
+async function playSong(index) {
+  if(!state.owner || !state.songs.length)return;
+  index=(index+state.songs.length)%state.songs.length;
+  state.songIndex=index;
+  if(state.view!=="songs")state.view="songs";
+  render();
+  const audio=document.getElementById("song-audio");
+  if(!audio)return;
+  const song=state.songs[index];
+  const {data,error}=await supabase.storage.from("charitha-songs").createSignedUrl(song.storage_path,7200);
+  if(error)throw error;
+  if(state.songIndex!==index || document.getElementById("song-audio")!==audio)return;
+  audio.src=data.signedUrl;
+  try {await audio.play();}catch {toast("Tap play to start your song ♫");}
+}
+async function uploadSongs(files) {
+  if(!state.owner || !files.length)return;
+  let added=0;
+  for(const file of files){
+    if(!/\.mp3$/i.test(file.name) || file.size>50*1024*1024){
+      toast("Only MP3 files up to 50 MB are supported.");continue;
+    }
+    const safe=file.name.replace(/\.mp3$/i,"").replace(/[^a-zA-Z0-9 _-]/g,"").trim().replace(/\s+/g,"-").slice(0,65)||"song";
+    const path=state.session.user.id+"/"+Date.now()+"-"+crypto.randomUUID().slice(0,8)+"-"+safe+".mp3";
+    const {error}=await supabase.storage.from("charitha-songs").upload(path,file,{
+      contentType:"audio/mpeg",upsert:false,cacheControl:"3600"
+    });
+    if(error){toast("Song upload failed: "+error.message);continue;}
+    added++;
+  }
+  if(added){await loadData();toast(added+" song"+(added===1?"":"s")+" added to your little mixtape ♡");}
+}
+async function deleteSong(index){
+  const song=state.songs[index];
+  if(!song || !confirm("Remove this song from Charitha's music box?"))return;
+  const {error}=await supabase.storage.from("charitha-songs").remove([song.storage_path]);
+  if(error)throw error;
+  state.songIndex=-1;
+  await loadData();
+  toast("Song removed.");
+}
+
 function notes() {
   return `<section>
     <div class="page-heading"><div><span class="eyebrow">02 / your thoughts</span>
@@ -328,7 +448,7 @@ function render() {
   if (state.loading) { app.innerHTML = '<div class="loading-screen"><div class="loading-flower">✳</div><p>Getting your space ready…</p></div>'; return; }
   if (!state.session) { app.innerHTML = state.view === "login" ? loginPage() : landing(); return; }
   if (!state.owner) { app.innerHTML = claimPage(); return; }
-  const views = { home, gallery, notes, activities, birthday };
+  const views = { home, gallery, songs, notes, activities, birthday };
   const body = (views[state.view] || home)();
   app.innerHTML = `<div class="shell">${nav()}<main class="content">${topbar()}${body}</main></div>`;
 }
@@ -370,12 +490,15 @@ async function loadData() {
     supabase.from("activities").select("*").order("created_at", { ascending: true }),
     supabase.from("activity_logs").select("*").gte("completed_on", dayKey(lower)),
     supabase.from("birthday_letters").select("body").eq("id", 1).maybeSingle(),
-    listPrivateGallery()
+    listPrivateGallery(),
+    listSongs()
   ]);
   const failure = requests.find(r => r.error);
   if (failure) { toast("Couldn't load your space: " + failure.error.message); return; }
   [state.notes, state.photoRecords, state.activities, state.logs] = requests.slice(0, 4).map(r => r.data || []);
   state.letter = requests[4].data?.body || "";
+  state.songs = requests[6] || [];
+  if(state.songIndex >= state.songs.length) state.songIndex = -1;
   const byPath = new Map(state.photoRecords.map(photo => [photo.storage_path, photo]));
   state.photos = requests[5].map(file => {
     const photo = byPath.get(file.storage_path);
@@ -400,7 +523,7 @@ async function syncSession(session) {
   state.session = session;
   if (!session) {
     state.owner = false; state.loading = false; state.view = "welcome";
-    state.notes = []; state.photos = []; state.photoRecords = []; state.activities = []; state.logs = []; state.photoUrls = {}; state.letter = "";
+    state.notes = []; state.photos = []; state.photoRecords = []; state.activities = []; state.logs = []; state.photoUrls = {}; state.letter = ""; state.songs = []; state.songIndex = -1;
     render(); return;
   }
   const { data, error } = await supabase.from("site_owner").select("user_id").eq("user_id", session.user.id).maybeSingle();
@@ -563,14 +686,20 @@ document.addEventListener("click", async e => {
     else if (action === "toggle-activity") await toggleActivity(id, target.dataset.date);
     else if (action === "view-photo") photoViewer(id);
     else if (action === "delete-photo") await removePhoto(id);
+    else if (action === "play-song") await playSong(Number(target.dataset.index));
+    else if (action === "song-next") await playSong(state.songIndex < 0 ? 0 : state.songIndex + 1);
+    else if (action === "song-prev") await playSong(state.songIndex < 0 ? 0 : state.songIndex - 1);
+    else if (action === "delete-song") await deleteSong(Number(target.dataset.index));
   } catch (err) { toast(err.message || "Something went wrong. Please try again."); }
 });
 document.addEventListener("change", async e => {
   if (e.target.matches("input[type=file]")) {
     const files = Array.from(e.target.files || []);
     e.target.value = "";
-    try { await uploadPhotos(files); }
-    catch (err) { toast(err.message || "There was a problem uploading."); }
+    try {
+      if(e.target.dataset.media==="songs") await uploadSongs(files);
+      else await uploadPhotos(files);
+    } catch (err) { toast(err.message || "There was a problem uploading."); }
   }
 });
 document.addEventListener("submit", async e => {
@@ -638,6 +767,16 @@ document.addEventListener("submit", async e => {
   } finally { if (submit?.isConnected) submit.disabled = false; }
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+document.addEventListener("ended",e=>{
+  if(e.target?.id==="song-audio" && state.view==="songs" && state.songIndex>=0){
+    playSong(state.songIndex+1).catch(err=>toast(err.message||"Couldn't play the next song."));
+  }
+},true);
+window.CharithaAssistant={
+  async accessToken(){const {data}=await supabase.auth.getSession();return data.session?.access_token||null;},
+  isOwner(){return Boolean(state.owner && state.session);},
+  currentPage(){return state.view;}
+};
 supabase.auth.onAuthStateChange((_event, session) => {
   setTimeout(() => syncSession(session), 0);
 });
