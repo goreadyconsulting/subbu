@@ -12,7 +12,7 @@ const toastEl = document.getElementById("toast");
 const state = {
   session: null, owner: false, view: "login", notes: [], photos: [],
   activities: [], logs: [], loginSent: false, authError: "",
-  claimError: "", loading: true, saving: false, photoUrls: {}, photoRecords: [], letter: "", songs: [], songIndex: -1, birthdaySongUrl: ""
+  claimError: "", loading: true, saving: false, photoUrls: {}, photoRecords: [], letter: "", songs: [], songIndex: -1, birthdaySongUrl: "", birthSkyUrls: {}, birthSkySelection: "art"
 };
 let identityRevision = 0;
 let toastTimer;
@@ -46,6 +46,71 @@ function toast(message) {
 function button(text, action, klass = "button-dark") {
   return `<button class="button ${klass}" data-action="${action}">${text}</button>`;
 }
+
+const birthSkyOptions = [
+  {id:"plain",label:"Plain",description:"The untouched sky"},
+  {id:"lines",label:"Lines",description:"Follow the constellations"},
+  {id:"art",label:"Art",description:"Constellations brought to life"}
+];
+function birthSkyFileType(path) {
+  // Accept original bucket-root uploads and future files in birth-sky/.
+  const name = String(path || "").replace(/^birth-sky\//i,"");
+  if(name.includes("/")) return null;
+  if(/^plain\.(png|jpg|jpeg|webp)$/i.test(name)) return "plain";
+  if(/^constellations\.(png|jpg|jpeg|webp)$/i.test(name)) return "lines";
+  if(/^art\.(png|jpg|jpeg|webp)$/i.test(name)) return "art";
+  return null;
+}
+function birthSkyViewer() {
+  const available = birthSkyOptions.filter(option=>state.birthSkyUrls[option.id]);
+  if(!available.length) return birthSkyArt();
+  const selected = available.find(option=>option.id===state.birthSkySelection)||available[0];
+  return `<div class="sky-viewer">
+    <div class="sky-toggle" role="group" aria-label="Choose your birth sky view">
+      ${available.map(option=>`<button type="button" class="sky-toggle-button ${option.id===selected.id?"active":""}"
+        data-action="sky-switch" data-sky="${option.id}" aria-pressed="${option.id===selected.id}">${option.label}</button>`).join("")}
+    </div>
+    <button type="button" class="sky-photo-button" data-action="sky-enlarge"
+      aria-label="Enlarge the ${esc(selected.label.toLowerCase())} birth sky">
+      <img id="birth-sky-photo" class="sky-photo" src="${esc(state.birthSkyUrls[selected.id])}"
+        alt="Stellarium sky at Charitha's birth, ${esc(selected.label.toLowerCase())} view" loading="lazy" decoding="async">
+      <span class="sky-photo-expand" aria-hidden="true">⤢</span>
+    </button>
+    <div class="sky-viewer-foot"><span id="sky-viewer-description">${esc(selected.description)}</span>
+      <span class="sky-viewer-tip">tap to see the little details ↗</span></div>
+  </div>`;
+}
+function switchBirthSky(id) {
+  if(!state.birthSkyUrls[id])return;
+  const option=birthSkyOptions.find(o=>o.id===id);
+  if(!option)return;
+  state.birthSkySelection=id;
+  const img=document.getElementById("birth-sky-photo");
+  if(img){
+    img.src=state.birthSkyUrls[id];
+    img.alt="Stellarium sky at Charitha's birth, "+option.label.toLowerCase()+" view";
+    img.closest(".sky-photo-button")?.setAttribute("aria-label","Enlarge the "+option.label.toLowerCase()+" birth sky");
+  }
+  const text=document.getElementById("sky-viewer-description");
+  if(text)text.textContent=option.description;
+  document.querySelectorAll("[data-action='sky-switch']").forEach(button=>{
+    const active=button.dataset.sky===id;
+    button.setAttribute("aria-pressed",String(active));
+    button.classList.toggle("active",active);
+  });
+}
+function enlargeBirthSky(){
+  const id=state.birthSkyUrls[state.birthSkySelection]?state.birthSkySelection:
+    birthSkyOptions.find(o=>state.birthSkyUrls[o.id])?.id;
+  if(!id)return;
+  const label=birthSkyOptions.find(o=>o.id===id)?.label||"Sky";
+  openModal(`<div class="sky-zoom-head"><span class="eyebrow">THE SKY WHEN YOU ARRIVED</span>
+    <h2>${esc(label)} ♡</h2></div>
+    <img class="sky-zoom-image" src="${esc(state.birthSkyUrls[id])}"
+      alt="Enlarged Stellarium ${esc(label.toLowerCase())} sky for 1 November 1999 in Tenali">
+    <p class="sky-zoom-caption">1 November 1999 · 3:05 PM IST · Tenali, Andhra Pradesh</p>`,true);
+}
+
 function birthSkyArt() {
   return `<svg class="birthday-sky-image" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 880" role="img" aria-labelledby="title desc"><title id="title">Afternoon birth sky reconstruction</title><desc id="desc">Illustrative reconstruction of afternoon southwest sky. Sun at bearing 240 degrees, altitude 33 degrees. Clouds are artistic, not historical weather data.</desc><defs><linearGradient id="a" x2="0" y2="1"><stop stop-color="#7fb5da"/><stop offset=".48" stop-color="#c5deea"/><stop offset="1" stop-color="#f9e5d1"/></linearGradient><radialGradient id="b"><stop stop-color="#fff9dc" stop-opacity=".95"/><stop offset=".24" stop-color="#ffefce" stop-opacity=".6"/><stop offset="1" stop-color="#ffebca" stop-opacity="0"/></radialGradient><linearGradient id="c" x2="0" y2="1"><stop stop-color="#b4c9c0"/><stop offset="1" stop-color="#789c96"/></linearGradient><filter id="d"><feGaussianBlur stdDeviation="13"/></filter></defs><rect width="1440" height="880" fill="url(#a)"/><g filter="url(#d)" fill="#fffdfb" opacity=".74"><ellipse cx="160" cy="310" rx="220" ry="38"/><ellipse cx="320" cy="290" rx="160" ry="50"/><ellipse cx="1050" cy="272" rx="210" ry="29"/><ellipse cx="1190" cy="300" rx="187" ry="37"/><ellipse cx="593" cy="545" rx="250" ry="21"/></g><circle cx="917" cy="424" r="283" fill="url(#b)"/><circle cx="917" cy="424" r="52" fill="#fff8e5"/><circle cx="917" cy="424" r="39" fill="#fffcf4"/><path d="M0 671Q155 633 298 663Q508 616 730 672Q950 630 1180 671Q1350 643 1440 656V880H0Z" fill="#cbd1c5" opacity=".84"/><path d="M0 740Q199 703 362 735Q576 690 803 741Q1100 699 1440 733V880H0Z" fill="url(#c)" opacity=".8"/><path d="M0 790Q245 756 470 787Q729 764 996 788Q1220 772 1440 798V880H0Z" fill="#6b968d" opacity=".55"/><rect x="56" y="48" width="742" height="146" rx="29" fill="#fffdf8" opacity=".87"/><text x="91" y="103" font-family="Georgia,serif" font-size="40" fill="#695063">The sky when you arrived</text><text x="94" y="149" font-family="Arial,sans-serif" font-size="23" fill="#846a79">1 November 1999 - 3:05 PM IST</text><text x="95" y="178" font-family="Arial,sans-serif" font-size="18" fill="#897886">Tenali, Andhra Pradesh, India</text><rect x="57" y="809" width="1234" height="46" rx="18" fill="#fffbf2" opacity=".83"/><text x="79" y="839" font-family="Arial,sans-serif" font-size="19" fill="#756b72">Sun: southwest 240 degrees, 33 degrees above horizon | Astronomical reconstruction, clouds illustrative</text></svg>`;
 }
@@ -186,8 +251,10 @@ function home() {
       <div class="birthday-section-caption"><span class="eyebrow">THE WORLD AT 3:05 PM</span>
         <h2>When the sky first <em>met you.</em></h2>
         <p>1 November 1999 · 3:05 PM IST · Tenali, Andhra Pradesh, India</p></div>
-      ${birthSkyArt()}
-      <p class="sky-disclaimer">Recreated using the Sun's position for her birth time. Clouds and landscape are illustrative, not historical weather imagery.</p>
+      ${birthSkyViewer()}
+      <p class="sky-disclaimer">${Object.keys(state.birthSkyUrls).length
+        ? "The sky as captured in Stellarium for your birth details. Switch between the plain sky, constellation lines and artwork."
+        : "An artistic fallback while your Stellarium skies are being prepared."}</p>
     </section>
     ${compatibilityBlock()}
     <section class="birthday-last-note"><p>I'll keep celebrating this birthday until the next one. And then that one, too.</p>
@@ -514,7 +581,22 @@ async function loadData() {
 
   const byPath = new Map(state.photoRecords.map(photo => [photo.storage_path, photo]));
   const listed = results[5].status === "fulfilled" ? results[5].value : [];
-  state.photos = listed.map(file => {
+  // Keep the three sky screenshots out of the ordinary photo diary.
+  const skyFiles = listed.filter(file => birthSkyFileType(file.storage_path));
+  const skyPaths = new Map();
+  for (const file of skyFiles) {
+    const type = birthSkyFileType(file.storage_path);
+    if (!skyPaths.has(type) || /^birth-sky\//i.test(file.storage_path)) skyPaths.set(type, file.storage_path);
+  }
+  const skyResults = await Promise.all(Array.from(skyPaths, async ([type, path]) => {
+    const { data, error } = await supabase.storage.from("charitha-gallery").createSignedUrl(path, 86400);
+    return [type, error ? "" : data?.signedUrl || ""];
+  }));
+  state.birthSkyUrls = Object.fromEntries(skyResults.filter(([, url]) => Boolean(url)));
+  if (!state.birthSkyUrls[state.birthSkySelection]) {
+    state.birthSkySelection = state.birthSkyUrls.art ? "art" : (Object.keys(state.birthSkyUrls)[0] || "art");
+  }
+  state.photos = listed.filter(file => !birthSkyFileType(file.storage_path)).map(file => {
     const photo = byPath.get(file.storage_path);
     return {
       id: photo?.id || "storage:" + file.storage_path,
@@ -558,7 +640,7 @@ async function syncSession(session) {
   state.session = session;
   if (!session) {
     state.owner = false; state.loading = false; state.view = "login";
-    state.notes = []; state.photos = []; state.photoRecords = []; state.activities = []; state.logs = []; state.photoUrls = {}; state.letter = ""; state.songs = []; state.songIndex = -1; state.birthdaySongUrl = "";
+    state.notes = []; state.photos = []; state.photoRecords = []; state.activities = []; state.logs = []; state.photoUrls = {}; state.letter = ""; state.songs = []; state.songIndex = -1; state.birthdaySongUrl = ""; state.birthSkyUrls = {}; state.birthSkySelection = "art";
     render(); return;
   }
   const { data, error } = await supabase.from("site_owner").select("user_id").eq("user_id", session.user.id).maybeSingle();
@@ -719,6 +801,8 @@ document.addEventListener("click", async e => {
         else audio.pause();
       }
     }
+    else if (action === "sky-switch") switchBirthSky(target.dataset.sky);
+    else if (action === "sky-enlarge") enlargeBirthSky();
     else if (action === "close-modal") closeModal();
     else if (action === "view") { state.view = target.dataset.view; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
     else if (action === "signout") { await supabase.auth.signOut(); closeModal(); }
