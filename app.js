@@ -181,32 +181,35 @@ function claimPage() {
   </main>`;
 }
 function nav() {
-  const entries = [
-    ["home", "⌂", "My little world"],
-    ["gallery", "▧", "Memories"],
-    ["songs", "♫", "Our songs"],
-    ["notes", "✎", "Notes to self"],
-    ["activities", "☼", "Daily rituals"],
-    ["birthday", "♡", "Birthday letter"]
-  ];
-  return `<aside class="sidebar">
-    <div class="sidebar-brand">charitha<span style="color:#c28a97">♡</span></div>
-    <div class="sidebar-caption">your happy little place ✦</div>
-    <nav class="nav-group" aria-label="Main navigation">
-      ${entries.map(([v, icon, name]) => `<button title="${name}" class="nav-button ${state.view === v ? "active" : ""}"
-        data-action="view" data-view="${v}" aria-current="${state.view === v ? "page" : "false"}">
-        <span class="nav-emoji">${icon}</span><span class="nav-label desktop-nav-label">${name}</span><span class="nav-label mobile-nav-label">${({ home: "Home", gallery: "Memories", songs: "Songs", notes: "Notes", activities: "Rituals", birthday: "Letter" })[v]}</span></button>`).join("")}
-    </nav>
-    <div class="sidebar-note"><div class="hand">a gentle reminder ♡</div><p>Your life doesn't have to be perfect to be absolutely lovely.</p></div>
-    <div class="sidebar-bottom"><span class="muted" style="font-size:11px">Private & yours</span>
-      <button data-action="signout">Sign out ↗</button></div>
-  </aside>`;
+ const entries=[
+  ["home","⌂",state.role==="kittu"?"Dashboard":"Home"],
+  ["tasks","☑","Tasks"],["requests","♡","Requests"],
+  ["messages","✉","Messages"],["notifications","♧","Alerts"],["more","☰","More"],
+  ["gallery","▧","Memories"],["songs","♫","Our songs"],["notes","✎","Notes"],
+  ["activities","☼","Daily rituals"],["birthday","♡","Birthday letter"]
+ ];
+ return `<aside class="sidebar duo-sidebar">
+  <div class="sidebar-brand">our little space <span>♡</span></div>
+  <div class="sidebar-caption">${state.role==="kittu"?"Kittu · Admin":"Subbu · Her space"}</div>
+  <nav class="nav-group" aria-label="Main navigation">
+    ${entries.map(([v,icon,name])=>`<button class="nav-button ${state.view===v?"active":""}"
+       data-action="view" data-view="${v}" title="${name}" aria-current="${state.view===v?"page":"false"}">
+       <span class="nav-emoji">${icon}</span><span class="nav-label desktop-nav-label">${name}</span>
+       <span class="nav-label mobile-nav-label">${name}</span>
+       ${v==="notifications"&&duoUnread()?'<span class="duo-nav-dot">•</span>':""}
+     </button>`).join("")}
+  </nav>
+  <div class="sidebar-note"><div class="hand">a little reminder ♡</div><p>Little things count.</p></div>
+  <div class="sidebar-bottom"><span class="muted">${state.role==="kittu"?"Admin":"Private & yours"}</span><button data-action="signout">Sign out ↗</button></div>
+ </aside>`;
 }
 function topbar() {
   const now = new Date();
   return `<div class="content-top">
     <div class="date">${now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>
-    <div class="content-top-right"><span class="hand">one day at a time</span><div class="avatar" title="Charitha">C</div></div>
+    <div class="content-top-right"><span class="hand">${state.role==="kittu"?"Kittu's corner":"one day at a time"}</span>
+ <div class="avatar" title="${state.role==="kittu"?"Kittu":"Subbu"}">${state.role==="kittu"?"K":"S"}</div>
+ <button class="duo-header-signout" data-action="signout" title="Sign out" aria-label="Sign out">↗</button></div>
   </div>`;
 }
 function home() {
