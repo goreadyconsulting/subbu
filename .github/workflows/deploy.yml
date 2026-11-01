@@ -30,7 +30,7 @@ jobs:
           mkdir -p _site
           cp index.html app.js styles.css assistant.js assistant.css _site/
           mkdir -p _site/assets
-          cp assets/sir-meowsalot.svg _site/assets/
+          cp assets/sir-meowsalot.svg assets/sir-meowsalot.webp _site/assets/
           touch _site/.nojekyll
       - name: Upload website
         uses: actions/upload-pages-artifact@v4
