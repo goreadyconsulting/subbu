@@ -638,15 +638,8 @@ async function syncSession(session) {
     state.notes = []; state.photos = []; state.photoRecords = []; state.activities = []; state.logs = []; state.photoUrls = {}; state.letter = ""; state.songs = []; state.songIndex = -1; state.birthdaySongUrl = ""; state.birthSkyUrls = {}; state.birthSkySelection = "art";
     render(); return;
   }
-  let { data, error } = await supabase.from("site_members").select("user_id,role,display_name").eq("user_id", session.user.id).maybeSingle();
-  // When Kittu's confirmed Auth account is created, securely activate his pre-approved role.
-  if (!data && !error && session.user.email?.toLowerCase()==="kittu1101@subbu.com") {
-    const activated=await supabase.rpc("activate_kittu_membership");
-    if(!activated.error && activated.data){
-      const member=await supabase.from("site_members").select("user_id,role,display_name").eq("user_id",session.user.id).maybeSingle();
-      data=member.data;error=member.error;
-    }
-  }
+  const { data, error } = await supabase.from("site_members")
+    .select("user_id,role,display_name").eq("user_id",session.user.id).maybeSingle();
   if (revision !== identityRevision) return;
   if (error) toast("Unable to verify access: " + error.message);
   state.owner = Boolean(data);
