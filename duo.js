@@ -68,7 +68,7 @@ export function duoView(v){
  if(v==="notifications")return `<section class="duo-center">${heading("NOTIFICATION CENTER","Your little updates. ♡","A separate notification center for you.")}<div class="duo-form-row">${refresh}<button class="duo-text-button" data-duo-action="read-all">Mark all read</button></div>
  ${D.notifications.map(n=>`<button type="button" class="duo-notification ${n.read_at?"read":""}" data-duo-action="notice" data-id="${n.id}" data-section="${esc(n.section)}"><span>${n.read_at?"○":"●"}</span><span><b>${esc(n.heading)}</b><small>${esc(n.detail)}</small><em>${date(n.created_at)}</em></span><span>↗</span></button>`).join("")||empty("All caught up. ♡")}</section>`;
  if(v==="more")return `<section class="duo-center">${heading("YOUR SPACE","More little corners. ♡","Everything else is one tap away.")}<div class="duo-more">
- ${[["gallery","Memories","▧"],["songs","Our songs","♫"],["notes","Notes","✎"],["activities","Daily rituals","☼"],["birthday","Birthday letter","♡"]].map(([v,name,icon])=>`<button data-action="view" data-view="${v}"><span>${icon}</span>${name} ↗</button>`).join("")}</div>
+ ${[["gallery","Memories","▧"],["songs","Our songs","♫"],["notes","Notes","✎"],["activities","Daily rituals","☼"],["birth-story","Birthday home","♡"],["birthday","Birthday letter","✉"]].map(([v,name,icon])=>`<button data-action="view" data-view="${v}"><span>${icon}</span>${name} ↗</button>`).join("")}</div>
  <button class="duo-text-button" data-action="signout">Sign out</button></section>`;
  return "";
 }
