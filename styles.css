@@ -169,6 +169,8 @@ textarea.field{resize:vertical;min-height:180px}
 .birthday-letter h2{font-size:53px;margin:24px 0}
 .birthday-letter p{font-size:17px;line-height:2;color:#776d73}
 .birthday-letter .signoff{font:400 24px var(--hand);color:#b67f90;margin-top:25px}
+.birthday-letter p:first-of-type{color:#65545e;font-weight:600}
+.birthday-letter .letter-postscript{border-top:1px solid #eadbdc;padding-top:26px;margin-top:31px;font-family:var(--hand);font-size:19px;line-height:1.75;color:#936775}
 .modal-overlay{position:fixed;inset:0;background:#3025309e;z-index:100;display:grid;place-items:center;padding:20px;overflow-y:auto}
 .modal{position:relative;background:var(--white);width:min(100%,560px);padding:36px;border-radius:26px;max-height:calc(100vh - 35px);overflow:auto;box-shadow:0 30px 90px #28192c32}
 .modal-wide{width:min(100%,850px)}
