@@ -289,7 +289,7 @@ function letterBody() {
   return `<div class="birthday-letter">
     <span class="eyebrow">November 01 · A birthday note</span>
     <h2>Dear Charitha, ♡</h2>
-${state.letter ? state.letter.split(/\\n\\s*\\n/).filter(Boolean).map(para => `<p class="${para.startsWith("P.S.") ? "letter-postscript" : ""}">${esc(para)}</p>`).join("") : `<p class="muted">Your letter is being tucked into its envelope. Try opening it again in a moment.</p>`}
+${state.letter ? state.letter.split(/\n\s*\n/).filter(Boolean).map(para => `<p class="${para.startsWith("P.S.") ? "letter-postscript" : ""}">${esc(para)}</p>`).join("") : `<p class="muted">Your letter is being tucked into its envelope. Try opening it again in a moment.</p>`}
   </div>`;
 }
 function birthday() {
