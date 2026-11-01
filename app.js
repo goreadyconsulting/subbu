@@ -86,7 +86,7 @@ function landing() {
         </div>
         <div class="feature-grid">
           <article class="feature-card feature-rose"><div class="feature-numeral">01 / your memories</div>
-            <h3>Photo diary</h3><p>A home for all the pictures that make you smile.</p><div class="feature-doodle">✿</div></article>
+            <h3>Memory diary</h3><p>A home for all the pictures that make you smile.</p><div class="feature-doodle">✿</div></article>
           <article class="feature-card feature-lav"><div class="feature-numeral">02 / your thoughts</div>
             <h3>Notes to self</h3><p>Big dreams, tiny reminders, thoughts worth holding onto.</p><div class="feature-doodle">✎</div></article>
           <article class="feature-card feature-mint"><div class="feature-numeral">03 / your little wins</div>
@@ -135,7 +135,7 @@ function claimPage() {
 function nav() {
   const entries = [
     ["home", "⌂", "My little world"],
-    ["gallery", "▧", "Photo diary"],
+    ["gallery", "▧", "Memories"],
     ["notes", "✎", "Notes to self"],
     ["activities", "☼", "Daily rituals"],
     ["birthday", "♡", "Birthday letter"]
@@ -201,8 +201,18 @@ function home() {
 function isVideo(p) {
   return /\.mp4$/i.test(p.storage_path || "");
 }
+function memoryCaption(p) {
+  if ((p.caption || "").trim()) return p.caption.trim();
+  const filename = (p.storage_path || "").split("/").pop().replace(/\.(jpg|jpeg|png|webp|gif|avif|mp4)$/i, "");
+  const meaningful = filename.replace(/[_-]+/g, " ").trim();
+  if (meaningful && !/^[a-f0-9]{8} [a-f0-9 ]{18,}$/i.test(meaningful) && !/^[a-f0-9]{24,}$/i.test(meaningful)) {
+    return meaningful.slice(0, 80);
+  }
+  return isVideo(p) ? "a little film ♡" : "a little moment ♡";
+}
 function photoCard(p) {
   const video = isVideo(p);
+  const caption = memoryCaption(p);
   const visual = video
     ? `<div class="video-preview" aria-hidden="true">
         <div class="filmstrip top"></div>
@@ -211,9 +221,9 @@ function photoCard(p) {
         <div class="filmstrip bottom"></div>
       </div>`
     : `<img loading="lazy" alt="${esc(p.caption || "A saved memory")}" src="${esc(state.photoUrls[p.id] || "")}">`;
-  return `<button class="photo-card" data-action="view-photo" data-id="${esc(p.id)}" aria-label="${video ? "Play" : "View"} ${esc(p.caption || (video ? "a saved video" : "a saved photo"))}">
+  return `<button class="photo-card" data-action="view-photo" data-id="${esc(p.id)}" aria-label="${video ? "Play" : "View"} ${esc(caption)}">
     ${visual}
-    <span class="photo-caption">${esc(p.caption || (video ? "a little film ♡" : "a little moment ♡"))}</span>
+    <span class="photo-caption">${esc(caption)}</span>
     <span class="photo-date">${fmt(p.created_at)}</span></button>`;
 }
 function gallery() {
