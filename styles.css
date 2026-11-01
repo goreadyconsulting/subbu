@@ -383,3 +383,14 @@ textarea.field{resize:vertical;min-height:180px}
 @supports(padding:max(0px)){
  .content{padding-bottom:max(110px,calc(125px + env(safe-area-inset-bottom)))}
 }
+
+.mobile-nav-label{display:none}
+@media(max-width:760px){
+ .desktop-nav-label{display:none!important}
+ .mobile-nav-label{display:block!important;font-size:10px;line-height:1.25;letter-spacing:0}
+ .nav-group{grid-template-columns:repeat(5,minmax(0,1fr))}
+ .nav-button[data-view="birthday"]{display:none}
+}
+@media(max-width:390px){
+ .mobile-nav-label{font-size:10px}
+}
