@@ -9,7 +9,7 @@ const app = document.getElementById("app");
 const modalRoot = document.getElementById("modal-root");
 const toastEl = document.getElementById("toast");
 const state = {
-  session: null, owner: false, view: "welcome", notes: [], photos: [],
+  session: null, owner: false, view: "login", notes: [], photos: [],
   activities: [], logs: [], loginSent: false, authError: "",
   claimError: "", loading: true, saving: false, photoUrls: {}, photoRecords: [], letter: "", songs: [], songIndex: -1, birthdaySongUrl: ""
 };
@@ -45,6 +45,9 @@ function toast(message) {
 function button(text, action, klass = "button-dark") {
   return `<button class="button ${klass}" data-action="${action}">${text}</button>`;
 }
+function birthSkyArt() {
+  return `<svg class="birthday-sky-image" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 880" role="img" aria-labelledby="title desc"><title id="title">Afternoon birth sky reconstruction</title><desc id="desc">Illustrative reconstruction of afternoon southwest sky. Sun at bearing 240 degrees, altitude 33 degrees. Clouds are artistic, not historical weather data.</desc><defs><linearGradient id="a" x2="0" y2="1"><stop stop-color="#7fb5da"/><stop offset=".48" stop-color="#c5deea"/><stop offset="1" stop-color="#f9e5d1"/></linearGradient><radialGradient id="b"><stop stop-color="#fff9dc" stop-opacity=".95"/><stop offset=".24" stop-color="#ffefce" stop-opacity=".6"/><stop offset="1" stop-color="#ffebca" stop-opacity="0"/></radialGradient><linearGradient id="c" x2="0" y2="1"><stop stop-color="#b4c9c0"/><stop offset="1" stop-color="#789c96"/></linearGradient><filter id="d"><feGaussianBlur stdDeviation="13"/></filter></defs><rect width="1440" height="880" fill="url(#a)"/><g filter="url(#d)" fill="#fffdfb" opacity=".74"><ellipse cx="160" cy="310" rx="220" ry="38"/><ellipse cx="320" cy="290" rx="160" ry="50"/><ellipse cx="1050" cy="272" rx="210" ry="29"/><ellipse cx="1190" cy="300" rx="187" ry="37"/><ellipse cx="593" cy="545" rx="250" ry="21"/></g><circle cx="917" cy="424" r="283" fill="url(#b)"/><circle cx="917" cy="424" r="52" fill="#fff8e5"/><circle cx="917" cy="424" r="39" fill="#fffcf4"/><path d="M0 671Q155 633 298 663Q508 616 730 672Q950 630 1180 671Q1350 643 1440 656V880H0Z" fill="#cbd1c5" opacity=".84"/><path d="M0 740Q199 703 362 735Q576 690 803 741Q1100 699 1440 733V880H0Z" fill="url(#c)" opacity=".8"/><path d="M0 790Q245 756 470 787Q729 764 996 788Q1220 772 1440 798V880H0Z" fill="#6b968d" opacity=".55"/><rect x="56" y="48" width="742" height="146" rx="29" fill="#fffdf8" opacity=".87"/><text x="91" y="103" font-family="Georgia,serif" font-size="40" fill="#695063">The sky when you arrived</text><text x="94" y="149" font-family="Arial,sans-serif" font-size="23" fill="#846a79">1 November 1999 - 3:05 PM IST</text><text x="95" y="178" font-family="Arial,sans-serif" font-size="18" fill="#897886">Tenali, Andhra Pradesh, India</text><rect x="57" y="809" width="1234" height="46" rx="18" fill="#fffbf2" opacity=".83"/><text x="79" y="839" font-family="Arial,sans-serif" font-size="19" fill="#756b72">Sun: southwest 240 degrees, 33 degrees above horizon | Astronomical reconstruction, clouds illustrative</text></svg>`;
+}
 function compatibilityBlock() {
   return `<section class="container couple-section" id="our-little-equation">
     <div class="couple-section-heading"><span class="eyebrow">AN ENTIRELY UNOFFICIAL LOVE REPORT</span>
@@ -68,61 +71,31 @@ function storyMoment(filename, note) {
   return `<button class="story-moment" data-action="view-photo" data-id="${esc(photo.id)}" aria-label="${video ? "Play" : "View"} ${esc(title)}">
     <div class="story-moment-media">${video
       ? '<div class="story-video-art" aria-hidden="true">▶</div>'
-      : `<img src="${esc(state.photoUrls[photo.id] || "")}" alt="${esc(title)}" loading="lazy" decoding="async">`}</div>
+      : `<img src="${esc(state.photoUrls[photo.id] || "")}" alt="${esc(title)}" loading="lazy" decoding="async" data-private-media="${esc(photo.storage_path)}">`}</div>
     <span class="story-moment-name">${esc(title)} ${video ? "↗" : "♡"}</span>
     <small>${esc(note)}</small>
   </button>`;
 }
-function landing() {
-  return `<header class="topbar container">
-    <div class="brand">charitha<span>♡</span></div>
-    <button class="button button-outline button-small" data-action="login">Enter your little world ↗</button>
-  </header>
-  <main class="birthday-landing">
-    <section class="container birthday-hero birthday-public-hero">
-      <div class="birthday-hero-words">
-        <div class="birthday-kicker">01 NOVEMBER 1999 - THE WORLD GOT LUCKIER</div>
-        <div class="birth-tiny">a little love note, made just for you</div>
-        <h1>Happy birthday, <em>Charitha.</em> ♡</h1>
-        <p>Hi Charitha Aluru, thank you for being born. There is so much I want to tell you, and I made this little corner of the internet to keep it all.</p>
-        <div class="birthday-primary-actions">
-          <button class="button button-dark" data-action="letter">show message ♡</button>
-          <button class="button button-pink" data-action="surprise-song">♫ play this song for suprise</button>
-        </div>
-        <p class="birthday-small-note">A love letter, a song, and a whole lot of you. Sign in to open the surprise.</p>
-      </div>
-      <div class="birthday-hero-decoration" aria-hidden="true"><div class="birthday-orbit-heart">♡</div><span>to every little moment, and all the ones still to come</span></div>
-    </section>
-    <section class="container birthday-sky-section">
-      <div class="section-intro">
-        <span class="eyebrow">THE DAY THE UNIVERSE MET YOU</span>
-        <h2>The sky when <em>you arrived.</em></h2>
-        <p>1 November 1999 · 3:05 PM IST · Tenali, Andhra Pradesh</p>
-      </div>
-      <img class="birthday-sky-image" src="./assets/charitha-birth-sky.svg" alt="Illustration of Charitha's afternoon birth sky over Tenali, with the Sun in the southwest" loading="lazy">
-      <p class="sky-disclaimer">An astronomical reconstruction of the Sun's position at your birth, not an original photograph or a record of the weather that day.</p>
-    </section>
-    ${compatibilityBlock()}
-    <section class="container birthday-last-note"><p>I missed the first 27 years. How about we make the next 73 count?</p><button class="button button-dark" data-action="login">Step inside our little story ♡</button></section>
-  </main>
-  <footer class="footer container"><span>For Charitha, with all my love ♡</span><span>01 NOVEMBER</span></footer>`;
-}
 function loginPage() {
-  return `<main class="auth-page">
-    <div class="auth-card">
-      <div class="auth-icon">♡</div><div class="eyebrow">Your own little world</div>
-      <h1>Welcome, Charitha.</h1>
-      <p>Your memories and notes are private. Sign in with your email and password to open your space.</p>
+  return `<main class="auth-page private-access-page">
+    <section class="auth-card private-access-card" aria-labelledby="login-heading">
+      <div class="auth-icon" aria-hidden="true">✦</div>
+      <div class="eyebrow">PRIVATE ACCESS</div>
+      <h1 id="login-heading">Welcome back.</h1>
+      <p>Sign in to continue.</p>
       <form data-form="login">
-        <label class="form-label" for="email">Your email address</label>
-        <input id="email" class="field" type="email" name="email" required autocomplete="username" placeholder="Your email address" maxlength="254">
-        <label class="form-label" for="password" style="margin-top:15px">Your password</label>
-        <input id="password" class="field" type="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
-        <button class="button button-dark" type="submit">Open my space →</button>
+        <label class="form-label" for="email">Email address</label>
+        <input id="email" class="field" type="email" name="email" required
+          autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="Email address" maxlength="254">
+        <label class="form-label" for="password" style="margin-top:15px">Password</label>
+        <input id="password" class="field" type="password" name="password" required
+          autocomplete="current-password" placeholder="Enter password">
+        <button class="button button-dark" type="submit">Sign in →</button>
       </form>
-      ${state.authError ? `<div class="feedback" style="background:#fbe4e3;color:#94505b">${esc(state.authError)}</div>` : ""}
-      <button class="back-link" data-action="welcome">← Back to your birthday surprise</button>
-    </div></main>`;
+      ${state.authError ? `<div class="feedback auth-error" role="alert">${esc(state.authError)}</div>` : ""}
+      <p class="auth-privacy-note">A private little corner of the internet ♡</p>
+    </section>
+  </main>`;
 }
 function claimPage() {
   return `<main class="claim-page">
@@ -136,7 +109,7 @@ function claimPage() {
         <button class="button button-dark" type="submit">Unlock my space ♡</button>
       </form>
       ${state.claimError ? `<div class="feedback" style="background:#fbe4e3;color:#94505b">${esc(state.claimError)}</div>` : ""}
-      <button class="back-link" data-action="signout">Not Charitha? Sign out</button>
+      <button class="back-link" data-action="signout">Sign out</button>
     </div>
   </main>`;
 }
@@ -172,6 +145,7 @@ function topbar() {
 function home() {
   const hero = photoByFilename("Hero Section.jpg");
   const heroUrl = hero ? state.photoUrls[hero.id] || "" : "";
+  const heroVisible = Boolean(hero && heroUrl);
   const favourite = ["First Selfie.jpg", "Pottery Date.jpg", "First Temple Visit.jpg", "Her blushing.jpg", "Dino-Rawr.jpg", "Cute video.mp4"];
   const notes = ["One of our very first little moments", "A day worth keeping", "Our first temple visit", "Just you being you", "The cutest little rawr", "A tiny moving memory"];
   const moments = favourite.map((name, i) => storyMoment(name, notes[i])).filter(Boolean).join("");
@@ -194,7 +168,7 @@ function home() {
               "<small>The birthday song is still getting its ribbon tied.</small>"}
         </div>
       </div>
-      ${heroUrl ? `<div class="birthday-hero-photo"><img src="${esc(heroUrl)}" alt="A special photo of Charitha" fetchpriority="high"><span class="birthday-photo-sticker">my favourite girl ♡</span></div>` :
+      ${heroUrl ? `<div class="birthday-hero-photo"><img src="${esc(heroUrl)}" alt="A special photo of Charitha" decoding="async" fetchpriority="high" data-private-media="${esc(hero.storage_path)}"><span class="birthday-photo-sticker">my favourite girl ♡</span></div>` :
         '<div class="birthday-hero-decoration" aria-hidden="true"><div class="birthday-orbit-heart">♡</div></div>'}
     </div>
     <div class="birthday-main-letter">
@@ -212,7 +186,7 @@ function home() {
       <div class="birthday-section-caption"><span class="eyebrow">THE WORLD AT 3:05 PM</span>
         <h2>When the sky first <em>met you.</em></h2>
         <p>1 November 1999 · 3:05 PM IST · Tenali, Andhra Pradesh, India</p></div>
-      <img class="birthday-sky-image" src="./assets/charitha-birth-sky.svg" alt="An astronomical reconstruction of the afternoon birth sky in Tenali, with the Sun southwest" loading="lazy">
+      ${birthSkyArt()}
       <p class="sky-disclaimer">Recreated using the Sun's position for her birth time. Clouds and landscape are illustrative, not historical weather imagery.</p>
     </section>
     ${compatibilityBlock()}
@@ -242,7 +216,7 @@ function photoCard(p) {
         <div class="video-type-label">A little film · MP4</div>
         <div class="filmstrip bottom"></div>
       </div>`
-    : `<img loading="lazy" alt="${esc(p.caption || "A saved memory")}" src="${esc(state.photoUrls[p.id] || "")}">`;
+    : `<img loading="lazy" alt="${esc(p.caption || "A saved memory")}" src="${esc(state.photoUrls[p.id] || "")}" data-private-media="${esc(p.storage_path)}">`;
   return `<button class="photo-card" data-action="view-photo" data-id="${esc(p.id)}" aria-label="${video ? "Play" : "View"} ${esc(caption)}">
     ${visual}
     <span class="photo-caption">${esc(caption)}</span>
@@ -468,9 +442,10 @@ function birthday() {
   </section>`;
 }
 function render() {
-  if (state.loading) { app.innerHTML = '<div class="loading-screen"><div class="loading-flower">✳</div><p>Getting your space ready…</p></div>'; return; }
-  if (!state.session) { app.innerHTML = state.view === "login" ? loginPage() : landing(); return; }
+  if (state.loading) { document.title = "Private Space"; app.innerHTML = '<div class="loading-screen"><div class="loading-flower">✳</div><p>Opening private space…</p></div>'; return; }
+  if (!state.session) { document.title = "Private Space"; app.innerHTML = loginPage(); return; }
   if (!state.owner) { app.innerHTML = claimPage(); return; }
+  document.title = "Charitha\u0027s Space ♡";
   const views = { home, gallery, songs, notes, activities, birthday };
   const body = (views[state.view] || home)();
   app.innerHTML = `<div class="shell">${nav()}<main class="content">${topbar()}${body}</main></div>`;
@@ -540,7 +515,7 @@ async function loadData() {
     };
   }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   const signed = await Promise.all(state.photos.map(async photo => {
-    const { data, error } = await supabase.storage.from("charitha-gallery").createSignedUrl(photo.storage_path, 3600);
+    const { data, error } = await supabase.storage.from("charitha-gallery").createSignedUrl(photo.storage_path, 86400);
     if (error) return [photo.id, ""];
     return [photo.id, data?.signedUrl || ""];
   }));
@@ -551,7 +526,7 @@ async function syncSession(session) {
   const revision = ++identityRevision;
   state.session = session;
   if (!session) {
-    state.owner = false; state.loading = false; state.view = "welcome";
+    state.owner = false; state.loading = false; state.view = "login";
     state.notes = []; state.photos = []; state.photoRecords = []; state.activities = []; state.logs = []; state.photoUrls = {}; state.letter = ""; state.songs = []; state.songIndex = -1; state.birthdaySongUrl = "";
     render(); return;
   }
@@ -611,7 +586,7 @@ function photoViewer(id) {
     ? `<video class="modal-photo modal-video" controls preload="metadata" playsinline src="${esc(state.photoUrls[p.id] || "")}">
         Your browser cannot play this video.
       </video>`
-    : `<img class="modal-photo" src="${esc(state.photoUrls[p.id] || "")}" alt="${esc(p.caption || "Saved photograph")}">`;
+    : `<img class="modal-photo" src="${esc(state.photoUrls[p.id] || "")}" alt="${esc(p.caption || "Saved photograph")}" data-private-media="${esc(p.storage_path)}">`;
   openModal(`<span class="eyebrow">A moment worth keeping</span><h2>Memory lane ♡</h2>
     ${media}
     <form data-form="save-caption" data-id="${esc(p.id)}">
@@ -698,7 +673,7 @@ document.addEventListener("click", async e => {
   const action = target.dataset.action;
   const id = target.dataset.id;
   try {
-    if (action === "welcome") { state.view = "welcome"; state.authError = ""; render(); }
+    if (action === "welcome") { state.view = "login"; state.authError = ""; render(); }
     else if (action === "login") { state.view = "login"; render(); }
     else if (action === "letter") {
       if (!state.session || !state.owner) { state.view = "login"; render(); }
@@ -805,6 +780,28 @@ document.addEventListener("submit", async e => {
     else toast(err.message || "Couldn't save right now.");
   } finally { if (submit?.isConnected) submit.disabled = false; }
 });
+
+// Recover photos when iOS Safari reopens a tab with expired temporary media URLs.
+document.addEventListener("error", async event => {
+  const img = event.target;
+  if (!(img instanceof HTMLImageElement) || !img.dataset.privateMedia ||
+      !state.owner || img.dataset.privateRetry === "done") return;
+  img.dataset.privateRetry = "done";
+  const path = img.dataset.privateMedia;
+  try {
+    const { data, error } = await supabase.storage.from("charitha-gallery")
+      .createSignedUrl(path, 86400);
+    if (error || !data?.signedUrl) throw error || new Error("Photo unavailable");
+    if (img.isConnected) img.src = data.signedUrl;
+  } catch {
+    if (img.isConnected) {
+      img.style.display = "none";
+      img.closest(".birthday-hero-photo")?.classList.add("media-unavailable");
+      toast("A photo couldn't load. Try refreshing your space.");
+    }
+  }
+}, true);
+
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
 document.addEventListener("ended",e=>{
   if(e.target?.id==="song-audio" && state.view==="songs" && state.songIndex>=0){
