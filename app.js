@@ -251,7 +251,7 @@ function gallery() {
 
 function songTitle(song) {
   const leaf = (song.storage_path || "").split("/").pop() || "Untitled";
-  return leaf.replace(/\.mp3$/i,"").replace(/^\d{13}-/,"").replace(/[_-]+/g," ").trim().slice(0,100) || "Untitled";
+  return leaf.replace(/\.mp3$/i,"").replace(/^\d{13}-[a-f0-9]{8}-/i,"").replace(/[_-]+/g," ").trim().slice(0,100) || "Untitled";
 }
 function songs() {
   const selected = state.songs[state.songIndex];
