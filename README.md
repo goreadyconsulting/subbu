@@ -34,7 +34,7 @@ Go to **Storage → charitha-songs** and upload `.mp3` files. Folders work, too.
 The existing Subbu Auth user is present and has been mapped to the `subbu` site role.
 
 Create Kittu's account in **Supabase Dashboard → Authentication → Users → Add user → Create new user**:
-- Email: `kittu1101@subbu.com`
+- Email: the privately agreed Kittu login address
 - Password: choose the private password agreed by the two users; do not place it in the repository
 - Enable **Auto Confirm User**, because the demonstration email may not be able to receive messages.
 
