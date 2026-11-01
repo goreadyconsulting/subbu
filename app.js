@@ -787,7 +787,12 @@ document.addEventListener("click", async e => {
     else if (action === "sky-switch") switchBirthSky(target.dataset.sky);
     else if (action === "sky-enlarge") enlargeBirthSky();
     else if (action === "close-modal") closeModal();
-    else if (action === "view") { state.view = target.dataset.view; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+    else if (action === "view") {
+      state.view = target.dataset.view;
+      if (["home","tasks","requests","messages","notifications","more"].includes(state.view)) await duoLoad();
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
     else if (action === "signout") { await supabase.auth.signOut(); closeModal(); }
     else if (action === "new-note") noteEditor();
     else if (action === "edit-note") noteEditor(id);
