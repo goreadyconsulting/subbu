@@ -88,7 +88,7 @@ export async function duoOpen(path){
  <input name="title" class="field" maxlength="160" placeholder="A title for this memory" value="${esc(entry?.title||"")}">
  <label class="form-label">Your message</label><textarea name="message" class="field" required maxlength="5000" rows="5" placeholder="What does this moment mean to you?">${esc(entry?.message||"")}</textarea>
  <div class="duo-form-row">${kittu()?`<button type="button" class="duo-text-button" data-action="delete-photo" data-id="${esc(p.id)}">Remove this media</button>`:""}
- <button type="submit" class="button button-dark">${entry?"Update my words":"Seal my words ♡"}</button></div></form></section>`,true);
+ <button type="submit" class="button button-dark">${entry?"Update my words":"Seal my words ♡"}</button></div></form></section>`,true,false);
 }
 export async function duoClick(button){
  const a=button.dataset.duoAction,s=C.supabase;
