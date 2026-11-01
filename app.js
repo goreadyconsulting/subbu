@@ -11,7 +11,7 @@ const toastEl = document.getElementById("toast");
 const state = {
   session: null, owner: false, view: "welcome", notes: [], photos: [],
   activities: [], logs: [], loginSent: false, authError: "",
-  claimError: "", loading: true, saving: false, photoUrls: {}, photoRecords: [], letter: "", songs: [], songIndex: -1
+  claimError: "", loading: true, saving: false, photoUrls: {}, photoRecords: [], letter: "", songs: [], songIndex: -1, birthdaySongUrl: ""
 };
 let identityRevision = 0;
 let toastTimer;
@@ -45,59 +45,67 @@ function toast(message) {
 function button(text, action, klass = "button-dark") {
   return `<button class="button ${klass}" data-action="${action}">${text}</button>`;
 }
+function compatibilityBlock() {
+  return `<section class="container couple-section" id="our-little-equation">
+    <div class="couple-section-heading"><span class="eyebrow">AN ENTIRELY UNOFFICIAL LOVE REPORT</span>
+      <h2>Charitha <span>×</span> Omkar</h2><p>Two people. Lots of little moments. A rather wonderful situation.</p></div>
+    <div class="couple-math"><div class="couple-stat"><span>LOVE FORECAST</span><strong>♡ / ♡</strong><small>more than yesterday, less than tomorrow</small></div>
+      <div class="couple-stat"><span>REASONS I LOVE YOU</span><strong>1,000,000+</strong><small>and I am not done counting</small></div>
+      <div class="couple-stat"><span>THE PLAN</span><strong>73 years</strong><small>and every birthday in between</small></div></div>
+    <div class="couple-letter"><div class="couple-illustration">C <span>♡</span> O</div>
+      <p>One very kind, funny, charming girl who notices the little things and looks after people. One boy who is very, very glad he gets to love her.</p>
+      <p class="couple-handwritten">Compatibility rating: wildly biased, 100% written by Omkar.</p></div>
+  </section>`;
+}
+function photoByFilename(name) {
+  return state.photos.find(p => (p.storage_path || "").split("/").pop().toLowerCase() === name.toLowerCase());
+}
+function storyMoment(filename, note) {
+  const photo = photoByFilename(filename);
+  if (!photo) return "";
+  const video = isVideo(photo);
+  const title = memoryCaption(photo);
+  return `<button class="story-moment" data-action="view-photo" data-id="${esc(photo.id)}" aria-label="${video ? "Play" : "View"} ${esc(title)}">
+    <div class="story-moment-media">${video
+      ? '<div class="story-video-art" aria-hidden="true">▶</div>'
+      : `<img src="${esc(state.photoUrls[photo.id] || "")}" alt="${esc(title)}" loading="lazy" decoding="async">`}</div>
+    <span class="story-moment-name">${esc(title)} ${video ? "↗" : "♡"}</span>
+    <small>${esc(note)}</small>
+  </button>`;
+}
 function landing() {
-  return `
-    <header class="topbar container">
-      <div class="brand">charitha<span>♡</span></div>
-      <div class="header-right"><span class="tiny-note">a little something, just for you</span>
-        <button class="button button-outline button-small" data-action="login">Your space ↗</button>
+  return `<header class="topbar container">
+    <div class="brand">charitha<span>♡</span></div>
+    <button class="button button-outline button-small" data-action="login">Enter your little world ↗</button>
+  </header>
+  <main class="birthday-landing">
+    <section class="container birthday-hero birthday-public-hero">
+      <div class="birthday-hero-words">
+        <div class="birthday-kicker">01 NOVEMBER 1999 - THE WORLD GOT LUCKIER</div>
+        <div class="birth-tiny">a little love note, made just for you</div>
+        <h1>Happy birthday, <em>Charitha.</em> ♡</h1>
+        <p>Hi Charitha Aluru, thank you for being born. There is so much I want to tell you, and I made this little corner of the internet to keep it all.</p>
+        <div class="birthday-primary-actions">
+          <button class="button button-dark" data-action="letter">show message ♡</button>
+          <button class="button button-pink" data-action="surprise-song">♫ play this song for suprise</button>
+        </div>
+        <p class="birthday-small-note">A love letter, a song, and a whole lot of you. Sign in to open the surprise.</p>
       </div>
-    </header>
-    <main>
-      <section class="hero container">
-        <div class="hero-copy">
-          <div class="date-pill"><b>✳</b> 01 November · A special day</div>
-          <h1>Happy birthday, <em>Charitha.</em> ♡</h1>
-          <p class="intro">Some people deserve more than just a birthday wish.
-          So here's a tiny corner of the internet that's entirely yours — for memories, little thoughts,
-          everyday wins, and everything in between.</p>
-          <div class="hero-actions">
-            <button class="button button-dark" data-action="login">Step inside your space <span aria-hidden="true">↗</span></button>
-            <button class="button button-light" data-action="letter">A letter, just for you ♡</button>
-          </div>
-          <p class="hero-footnote">made with a whole lot of love & a little bit of magic ✦</p>
-        </div>
-        <div class="collage" aria-hidden="true">
-          <div class="paper-card card-back"><div class="card-pattern alt"></div></div>
-          <div class="paper-card card-middle"><div class="card-pattern"><span class="flower">✿</span></div></div>
-          <div class="paper-card card-front">
-            <div class="front-sticker">♡</div>
-            <div><p class="front-label">all things lovely</p><div class="front-caption">your story is the pretty part</div></div>
-          </div>
-          <div class="tape"></div><div class="floating-star">✳</div>
-          <div class="floating-heart">♡</div><div class="caption-tape">just for you!</div>
-        </div>
-      </section>
-      <div class="waves"></div>
-      <section class="container">
-        <div class="section-intro"><div class="eyebrow">A place to call your own</div>
-          <h2>Little things, <em class="italic">lovingly kept.</em></h2>
-          <p>No pressure, no perfection. Just somewhere to keep the moments and thoughts that matter to you.</p>
-        </div>
-        <div class="feature-grid">
-          <article class="feature-card feature-rose"><div class="feature-numeral">01 / your memories</div>
-            <h3>Memory diary</h3><p>A home for all the pictures that make you smile.</p><div class="feature-doodle">✿</div></article>
-          <article class="feature-card feature-lav"><div class="feature-numeral">02 / your thoughts</div>
-            <h3>Notes to self</h3><p>Big dreams, tiny reminders, thoughts worth holding onto.</p><div class="feature-doodle">✎</div></article>
-          <article class="feature-card feature-mint"><div class="feature-numeral">03 / your little wins</div>
-            <h3>Daily rituals</h3><p>Track the things you love doing. Or don't. Your rules.</p><div class="feature-doodle">☼</div></article>
-        </div>
-        <div class="bottom-letter"><p>psst... there's a letter waiting for you ♡</p>
-          <button class="button button-light" data-action="letter">Open the little letter ↗</button></div>
-      </section>
-    </main>
-    <footer class="footer container"><span>Made especially for Charitha, with ♡</span><span>EST. 01 NOV 2026</span></footer>
-  `;
+      <div class="birthday-hero-decoration" aria-hidden="true"><div class="birthday-orbit-heart">♡</div><span>to every little moment, and all the ones still to come</span></div>
+    </section>
+    <section class="container birthday-sky-section">
+      <div class="section-intro">
+        <span class="eyebrow">THE DAY THE UNIVERSE MET YOU</span>
+        <h2>The sky when <em>you arrived.</em></h2>
+        <p>1 November 1999 · 3:05 PM IST · Tenali, Andhra Pradesh</p>
+      </div>
+      <img class="birthday-sky-image" src="./assets/charitha-birth-sky.svg" alt="Illustration of Charitha's afternoon birth sky over Tenali, with the Sun in the southwest" loading="lazy">
+      <p class="sky-disclaimer">An astronomical reconstruction of the Sun's position at your birth, not an original photograph or a record of the weather that day.</p>
+    </section>
+    ${compatibilityBlock()}
+    <section class="container birthday-last-note"><p>I missed the first 27 years. How about we make the next 73 count?</p><button class="button button-dark" data-action="login">Step inside our little story ♡</button></section>
+  </main>
+  <footer class="footer container"><span>For Charitha, with all my love ♡</span><span>01 NOVEMBER</span></footer>`;
 }
 function loginPage() {
   return `<main class="auth-page">
@@ -147,7 +155,7 @@ function nav() {
     <nav class="nav-group" aria-label="Main navigation">
       ${entries.map(([v, icon, name]) => `<button title="${name}" class="nav-button ${state.view === v ? "active" : ""}"
         data-action="view" data-view="${v}" aria-current="${state.view === v ? "page" : "false"}">
-        <span class="nav-emoji">${icon}</span>${name}</button>`).join("")}
+        <span class="nav-emoji">${icon}</span><span class="nav-label">${name}</span></button>`).join("")}
     </nav>
     <div class="sidebar-note"><div class="hand">a gentle reminder ♡</div><p>Your life doesn't have to be perfect to be absolutely lovely.</p></div>
     <div class="sidebar-bottom"><span class="muted" style="font-size:11px">Private & yours</span>
@@ -162,41 +170,54 @@ function topbar() {
   </div>`;
 }
 function home() {
-  const completedToday = state.logs.filter(a => a.completed_on === todayKey()).length;
-  const recentNotes = state.notes.slice(0, 3);
-  return `<section>
-    <div class="eyebrow">✳ Welcome to your space</div><h1 class="page-title">Hello, lovely <em>Charitha.</em></h1>
-    <p class="muted" style="margin-bottom:32px">A home for little moments, big feelings, and everything that's you.</p>
-    <div class="grid-home">
-      <div class="welcome-banner"><span class="eyebrow">Something to keep close</span>
-        <h2>It's the little things that make a beautiful life.</h2>
-        <p>Collect the bits of your story that you never want to lose.</p>
-        <button class="button button-light button-small" data-action="view" data-view="birthday">A note, just for you ♡</button>
+  const hero = photoByFilename("Hero Section.jpg");
+  const heroUrl = hero ? state.photoUrls[hero.id] || "" : "";
+  const favourite = ["First Selfie.jpg", "Pottery Date.jpg", "First Temple Visit.jpg", "Her blushing.jpg", "Dino-Rawr.jpg", "Cute video.mp4"];
+  const notes = ["One of our very first little moments", "A day worth keeping", "Our first temple visit", "Just you being you", "The cutest little rawr", "A tiny moving memory"];
+  const moments = favourite.map((name, i) => storyMoment(name, notes[i])).filter(Boolean).join("");
+  const birthdaySongReady = Boolean(state.birthdaySongUrl);
+  return `<section class="birthday-private-page">
+    <div class="birthday-hero birthday-private-hero">
+      <div class="birthday-hero-words">
+        <span class="birthday-kicker">01 NOVEMBER • YOUR DAY, ALWAYS</span>
+        <span class="birth-tiny">a little something for my favourite girl</span>
+        <h1>Happy birthday, <em>Charitha.</em> ♡</h1>
+        <p>Hi Charitha Aluru, thank you for being born! I couldn't be there for the first 27 years, but I'd really love the remaining 73.</p>
+        <p class="birthday-hero-scribble">I love you more than yesterday and not as much as tomorrow.</p>
+        <div class="birthday-primary-actions">
+          <button class="button button-dark" data-action="letter">show message ♡</button>
+          <button class="button button-pink" data-action="surprise-song">♫ play this song for suprise</button>
+        </div>
+        <div class="birthday-song-inline" aria-live="polite">
+          ${birthdaySongReady ? `<audio id="birthday-audio" controls preload="metadata" playsinline src="${esc(state.birthdaySongUrl)}" aria-label="Happy Birthday Song"></audio>
+              <small>One little song, just for you. ♡</small>` :
+              "<small>The birthday song is still getting its ribbon tied.</small>"}
+        </div>
       </div>
-      <div class="today-card"><span class="eyebrow">Today is a good day to begin</span>
-        <h3>A fresh little page.</h3><p>Take the day at your own pace.</p>
-        <div class="today-date">${new Date().getDate()} <span style="font-size:19px">${new Date().toLocaleDateString("en-IN", { month: "long" })}</span></div>
-        <button class="button button-light button-small" data-action="view" data-view="activities">My daily rituals ↗</button>
-      </div>
+      ${heroUrl ? `<div class="birthday-hero-photo"><img src="${esc(heroUrl)}" alt="A special photo of Charitha" fetchpriority="high"><span class="birthday-photo-sticker">my favourite girl ♡</span></div>` :
+        '<div class="birthday-hero-decoration" aria-hidden="true"><div class="birthday-orbit-heart">♡</div></div>'}
     </div>
-    <div class="stats">
-      <div class="stat"><b>${state.photos.length}</b><span>Memories kept</span></div>
-      <div class="stat"><b>${state.notes.length}</b><span>Notes written</span></div>
-      <div class="stat"><b>${completedToday}</b><span>Little wins today</span></div>
+    <div class="birthday-main-letter">
+      <span class="eyebrow">A LETTER FROM OMKAR, WITH LOVE</span>
+      <h2>To the girl who makes the ordinary feel <em>extraordinary.</em></h2>
+      <p>There are a million reasons I love you. The way you are kind to everyone, notice the smallest things, laugh, care, and simply stay completely yourself. I hope you never change any of that.</p>
+      <button class="button button-outline" data-action="letter">Read every word I wrote for you ♡</button>
     </div>
-    <div class="split-row"><h3>Things on your mind</h3><button class="text-button" data-action="view" data-view="notes">Go to notes ↗</button></div>
-    <div class="preview-grid">
-      ${recentNotes.length ? recentNotes.map(n => `
-        <button class="preview-card" data-action="edit-note" data-id="${n.id}">
-          <h4>${esc(n.title)}</h4><p>${esc(n.body.slice(0, 105)) || "A little thought tucked away."}</p>
-        </button>`).join("") :
-        `<div class="empty-inline">No notes yet. That's the beautiful thing about a blank page. ♡
-          <button class="text-button" style="display:block;margin-top:9px" data-action="new-note">Write your first note →</button></div>`}
-    </div>
-    <div class="split-row"><h3>Memory lane</h3><button class="text-button" data-action="view" data-view="gallery">See your gallery ↗</button></div>
-    ${state.photos.length ? `<div class="gallery-grid">${state.photos.slice(0,3).map(photoCard).join("")}</div>` :
-      `<div class="empty-inline">A gallery waiting for its very first memory. ✿
-       <button class="text-button" style="display:block;margin-top:9px" data-action="view" data-view="gallery">Add a photograph →</button></div>`}
+    ${moments ? `<section class="birthday-story-section"><div class="birthday-section-caption">
+      <span class="eyebrow">TINY CHAPTERS, BIG FEELINGS</span><h2>And a few moments <em>along the way.</em></h2>
+      <p>Little pieces of our story, exactly how I named and remember them.</p></div>
+      <div class="birthday-story-strip">${moments}</div>
+      <button class="birthday-subtle-link" data-action="view" data-view="gallery">All our photos and videos live in Memories ↗</button></section>` : ""}
+    <section class="birthday-sky-section">
+      <div class="birthday-section-caption"><span class="eyebrow">THE WORLD AT 3:05 PM</span>
+        <h2>When the sky first <em>met you.</em></h2>
+        <p>1 November 1999 · 3:05 PM IST · Tenali, Andhra Pradesh, India</p></div>
+      <img class="birthday-sky-image" src="./assets/charitha-birth-sky.svg" alt="An astronomical reconstruction of the afternoon birth sky in Tenali, with the Sun southwest" loading="lazy">
+      <p class="sky-disclaimer">Recreated using the Sun's position for her birth time. Clouds and landscape are illustrative, not historical weather imagery.</p>
+    </section>
+    ${compatibilityBlock()}
+    <section class="birthday-last-note"><p>I'll keep celebrating this birthday until the next one. And then that one, too.</p>
+      <button class="button button-light" data-action="view" data-view="birthday">Keep this birthday letter ♡</button></section>
   </section>`;
 }
 function isVideo(p) {
@@ -500,6 +521,12 @@ async function loadData() {
   [state.notes, state.photoRecords, state.activities, state.logs] = requests.slice(0, 4).map(r => r.data || []);
   state.letter = requests[4].data?.body || "";
   state.songs = requests[6] || [];
+  const birthdayTrack = state.songs.find(song => (song.storage_path || "").split("/").pop().toLowerCase() === "happy birthday song.mp3");
+  state.birthdaySongUrl = "";
+  if (birthdayTrack) {
+    const { data, error } = await supabase.storage.from("charitha-songs").createSignedUrl(birthdayTrack.storage_path, 7200);
+    if (!error) state.birthdaySongUrl = data?.signedUrl || "";
+  }
   if(state.songIndex >= state.songs.length) state.songIndex = -1;
   const byPath = new Map(state.photoRecords.map(photo => [photo.storage_path, photo]));
   state.photos = requests[5].map(file => {
@@ -525,7 +552,7 @@ async function syncSession(session) {
   state.session = session;
   if (!session) {
     state.owner = false; state.loading = false; state.view = "welcome";
-    state.notes = []; state.photos = []; state.photoRecords = []; state.activities = []; state.logs = []; state.photoUrls = {}; state.letter = ""; state.songs = []; state.songIndex = -1;
+    state.notes = []; state.photos = []; state.photoRecords = []; state.activities = []; state.logs = []; state.photoUrls = {}; state.letter = ""; state.songs = []; state.songIndex = -1; state.birthdaySongUrl = "";
     render(); return;
   }
   const { data, error } = await supabase.from("site_owner").select("user_id").eq("user_id", session.user.id).maybeSingle();
@@ -676,6 +703,15 @@ document.addEventListener("click", async e => {
     else if (action === "letter") {
       if (!state.session || !state.owner) { state.view = "login"; render(); }
       else openModal(letterBody(), true);
+    }
+    else if (action === "surprise-song") {
+      if (!state.session || !state.owner) { state.view = "login"; render(); }
+      else {
+        const audio = document.getElementById("birthday-audio");
+        if (!audio || !state.birthdaySongUrl) toast("Your birthday song isn't quite ready yet ♡");
+        else if (audio.paused) { audio.play().catch(() => toast("Tap the audio player to start the surprise ♫")); }
+        else audio.pause();
+      }
     }
     else if (action === "close-modal") closeModal();
     else if (action === "view") { state.view = target.dataset.view; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
