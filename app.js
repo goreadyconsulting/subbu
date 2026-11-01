@@ -11,7 +11,7 @@ const toastEl = document.getElementById("toast");
 const state = {
   session: null, owner: false, view: "welcome", notes: [], photos: [],
   activities: [], logs: [], loginSent: false, authError: "",
-  claimError: "", loading: true, saving: false, photoUrls: {}
+  claimError: "", loading: true, saving: false, photoUrls: {}, letter: ""
 };
 let identityRevision = 0;
 let toastTimer;
@@ -63,7 +63,7 @@ function landing() {
           everyday wins, and everything in between.</p>
           <div class="hero-actions">
             <button class="button button-dark" data-action="login">Step inside your space <span aria-hidden="true">↗</span></button>
-            <button class="button button-light" data-action="letter">Read your letter ♡</button>
+            <button class="button button-light" data-action="letter">A letter, just for you ♡</button>
           </div>
           <p class="hero-footnote">made with a whole lot of love & a little bit of magic ✦</p>
         </div>
@@ -289,15 +289,7 @@ function letterBody() {
   return `<div class="birthday-letter">
     <span class="eyebrow">November 01 · A birthday note</span>
     <h2>Dear Charitha, ♡</h2>
-    <p>Here's to a year filled with more of the things that make you feel like yourself.
-      More spontaneous smiles. More little adventures. More quiet moments that turn out to mean everything.</p>
-    <p>You don't need to have it all figured out, or make every day extraordinary.
-      Sometimes the loveliest things are the simplest: a photograph you adore, a thought worth saving,
-      or the feeling that today was a good day.</p>
-    <p>That's why this little space exists. To hold the memories, the thoughts, the little wins —
-      and to remind you that every part of your story matters.</p>
-    <p>Wishing you a very happy birthday, and a year that's kind to you.</p>
-    <div class="signoff">With love, always. ♡</div>
+${state.letter ? state.letter.split(/\\n\\s*\\n/).filter(Boolean).map(para => `<p class="${para.startsWith("P.S.") ? "letter-postscript" : ""}">${esc(para)}</p>`).join("") : `<p class="muted">Your letter is being tucked into its envelope. Try opening it again in a moment.</p>`}
   </div>`;
 }
 function birthday() {
@@ -322,11 +314,13 @@ async function loadData() {
     supabase.from("notes").select("*").order("pinned", { ascending: false }).order("updated_at", { ascending: false }),
     supabase.from("photos").select("*").order("created_at", { ascending: false }),
     supabase.from("activities").select("*").order("created_at", { ascending: true }),
-    supabase.from("activity_logs").select("*").gte("completed_on", dayKey(lower))
+    supabase.from("activity_logs").select("*").gte("completed_on", dayKey(lower)),
+    supabase.from("birthday_letters").select("body").eq("id", 1).maybeSingle()
   ]);
   const failure = requests.find(r => r.error);
   if (failure) { toast("Couldn't load your space: " + failure.error.message); return; }
-  [state.notes, state.photos, state.activities, state.logs] = requests.map(r => r.data || []);
+  [state.notes, state.photos, state.activities, state.logs] = requests.slice(0, 4).map(r => r.data || []);
+  state.letter = requests[4].data?.body || "";
   const urls = await Promise.all(state.photos.map(async photo => {
     const { data } = await supabase.storage.from("charitha-gallery").createSignedUrl(photo.storage_path, 3600);
     return [photo.id, data?.signedUrl || ""];
@@ -339,7 +333,7 @@ async function syncSession(session) {
   state.session = session;
   if (!session) {
     state.owner = false; state.loading = false; state.view = "welcome";
-    state.notes = []; state.photos = []; state.activities = []; state.logs = []; state.photoUrls = {};
+    state.notes = []; state.photos = []; state.activities = []; state.logs = []; state.photoUrls = {}; state.letter = "";
     render(); return;
   }
   const { data, error } = await supabase.from("site_owner").select("user_id").eq("user_id", session.user.id).maybeSingle();
@@ -473,7 +467,10 @@ document.addEventListener("click", async e => {
   try {
     if (action === "welcome") { state.view = "welcome"; state.authError = ""; render(); }
     else if (action === "login") { state.view = "login"; render(); }
-    else if (action === "letter") openModal(letterBody(), true);
+    else if (action === "letter") {
+      if (!state.session || !state.owner) { state.view = "login"; render(); }
+      else openModal(letterBody(), true);
+    }
     else if (action === "close-modal") closeModal();
     else if (action === "view") { state.view = target.dataset.view; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
     else if (action === "signout") { await supabase.auth.signOut(); closeModal(); }
