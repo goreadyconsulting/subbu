@@ -11,7 +11,7 @@ const toastEl = document.getElementById("toast");
 const state = {
   session: null, owner: false, view: "welcome", notes: [], photos: [],
   activities: [], logs: [], loginSent: false, authError: "",
-  claimError: "", loading: true, saving: false, photoUrls: {}, letter: ""
+  claimError: "", loading: true, saving: false, photoUrls: {}, photoRecords: [], letter: ""
 };
 let identityRevision = 0;
 let toastTimer;
@@ -104,13 +104,14 @@ function loginPage() {
     <div class="auth-card">
       <div class="auth-icon">♡</div><div class="eyebrow">Your own little world</div>
       <h1>Welcome, Charitha.</h1>
-      <p>Your memories and notes are private. Sign in with your email to open your space.</p>
+      <p>Your memories and notes are private. Sign in with your email and password to open your space.</p>
       <form data-form="login">
         <label class="form-label" for="email">Your email address</label>
-        <input id="email" class="field" type="email" name="email" required autocomplete="email" placeholder="you@example.com" maxlength="254">
-        <button class="button button-dark" type="submit">Email me a sign-in link →</button>
+        <input id="email" class="field" type="email" name="email" required autocomplete="username" placeholder="Your email address" maxlength="254">
+        <label class="form-label" for="password" style="margin-top:15px">Your password</label>
+        <input id="password" class="field" type="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
+        <button class="button button-dark" type="submit">Open my space →</button>
       </form>
-      ${state.loginSent ? '<div class="feedback">The link is on its way! Open it in this browser to come back here. Check spam too.</div>' : ""}
       ${state.authError ? `<div class="feedback" style="background:#fbe4e3;color:#94505b">${esc(state.authError)}</div>` : ""}
       <button class="back-link" data-action="welcome">← Back to your birthday surprise</button>
     </div></main>`;
@@ -198,7 +199,7 @@ function home() {
   </section>`;
 }
 function photoCard(p) {
-  return `<button class="photo-card" data-action="view-photo" data-id="${p.id}">
+  return `<button class="photo-card" data-action="view-photo" data-id="${esc(p.id)}">
     <img loading="lazy" alt="${esc(p.caption || "A saved memory")}" src="${esc(state.photoUrls[p.id] || "")}">
     <span class="photo-caption">${esc(p.caption || "a little moment ♡")}</span>
     <span class="photo-date">${fmt(p.created_at)}</span></button>`;
@@ -307,6 +308,35 @@ function render() {
   const body = (views[state.view] || home)();
   app.innerHTML = `<div class="shell">${nav()}<main class="content">${topbar()}${body}</main></div>`;
 }
+async function listPrivateGallery() {
+  const bucket = supabase.storage.from("charitha-gallery");
+  const pending = [""];
+  const objects = [];
+  const visited = new Set();
+  while (pending.length) {
+    const folder = pending.shift();
+    if (visited.has(folder)) continue;
+    visited.add(folder);
+    let offset = 0;
+    let page = [];
+    do {
+      const result = await bucket.list(folder, { limit: 100, offset, sortBy: { column: "name", order: "asc" } });
+      if (result.error) throw result.error;
+      page = result.data || [];
+      for (const entry of page) {
+        if (!entry.name || entry.name === ".emptyFolderPlaceholder") continue;
+        const fullPath = folder ? folder + "/" + entry.name : entry.name;
+        if (entry.id == null) {
+          pending.push(fullPath);
+        } else if (/\.(jpg|jpeg|png|webp|gif|avif)$/i.test(entry.name)) {
+          objects.push({ storage_path: fullPath, created_at: entry.created_at });
+        }
+      }
+      offset += page.length;
+    } while (page.length === 100);
+  }
+  return objects;
+}
 async function loadData() {
   const lower = new Date();
   lower.setDate(lower.getDate() - 100);
@@ -315,17 +345,30 @@ async function loadData() {
     supabase.from("photos").select("*").order("created_at", { ascending: false }),
     supabase.from("activities").select("*").order("created_at", { ascending: true }),
     supabase.from("activity_logs").select("*").gte("completed_on", dayKey(lower)),
-    supabase.from("birthday_letters").select("body").eq("id", 1).maybeSingle()
+    supabase.from("birthday_letters").select("body").eq("id", 1).maybeSingle(),
+    listPrivateGallery()
   ]);
   const failure = requests.find(r => r.error);
   if (failure) { toast("Couldn't load your space: " + failure.error.message); return; }
-  [state.notes, state.photos, state.activities, state.logs] = requests.slice(0, 4).map(r => r.data || []);
+  [state.notes, state.photoRecords, state.activities, state.logs] = requests.slice(0, 4).map(r => r.data || []);
   state.letter = requests[4].data?.body || "";
-  const urls = await Promise.all(state.photos.map(async photo => {
-    const { data } = await supabase.storage.from("charitha-gallery").createSignedUrl(photo.storage_path, 3600);
+  const byPath = new Map(state.photoRecords.map(photo => [photo.storage_path, photo]));
+  state.photos = requests[5].map(file => {
+    const photo = byPath.get(file.storage_path);
+    return {
+      id: photo?.id || "storage:" + file.storage_path,
+      metaId: photo?.id || null,
+      storage_path: file.storage_path,
+      caption: photo?.caption || "",
+      created_at: photo?.created_at || file.created_at || new Date().toISOString()
+    };
+  }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const signed = await Promise.all(state.photos.map(async photo => {
+    const { data, error } = await supabase.storage.from("charitha-gallery").createSignedUrl(photo.storage_path, 3600);
+    if (error) return [photo.id, ""];
     return [photo.id, data?.signedUrl || ""];
   }));
-  state.photoUrls = Object.fromEntries(urls);
+  state.photoUrls = Object.fromEntries(signed);
   render();
 }
 async function syncSession(session) {
@@ -333,7 +376,7 @@ async function syncSession(session) {
   state.session = session;
   if (!session) {
     state.owner = false; state.loading = false; state.view = "welcome";
-    state.notes = []; state.photos = []; state.activities = []; state.logs = []; state.photoUrls = {}; state.letter = "";
+    state.notes = []; state.photos = []; state.photoRecords = []; state.activities = []; state.logs = []; state.photoUrls = {}; state.letter = "";
     render(); return;
   }
   const { data, error } = await supabase.from("site_owner").select("user_id").eq("user_id", session.user.id).maybeSingle();
@@ -389,11 +432,11 @@ function photoViewer(id) {
   if (!p) return;
   openModal(`<span class="eyebrow">A moment worth keeping</span><h2>Memory lane ♡</h2>
     <img class="modal-photo" src="${esc(state.photoUrls[p.id] || "")}" alt="${esc(p.caption || "Saved photograph")}">
-    <form data-form="save-caption" data-id="${p.id}">
+    <form data-form="save-caption" data-id="${esc(p.id)}">
       <label class="form-label" for="photo-caption">Give this memory a caption</label>
       <input class="field" name="caption" id="photo-caption" maxlength="400" placeholder="The day I…" value="${esc(p.caption)}">
       <div class="modal-actions">
-        <button type="button" class="button button-outline" data-action="delete-photo" data-id="${p.id}">Remove photo</button>
+        <button type="button" class="button button-outline" data-action="delete-photo" data-id="${esc(p.id)}">Remove photo</button>
         <button class="button button-dark" type="submit">Save caption</button>
       </div>
     </form>`, true);
@@ -427,10 +470,12 @@ async function uploadPhotos(files) {
 async function removePhoto(id) {
   const p = state.photos.find(x => x.id === id);
   if (!p || !confirm("Remove this photograph from your private gallery?")) return;
-  const rm = await supabase.from("photos").delete().eq("id", id);
-  if (rm.error) throw rm.error;
   const file = await supabase.storage.from("charitha-gallery").remove([p.storage_path]);
-  if (file.error) toast("Photo entry removed, but file cleanup needs attention.");
+  if (file.error) throw file.error;
+  if (p.metaId) {
+    const rm = await supabase.from("photos").delete().eq("id", p.metaId);
+    if (rm.error) toast("Photo removed, but its caption needs cleanup.");
+  }
   closeModal(); await loadData(); toast("Memory removed.");
 }
 async function removeNote(id) {
@@ -504,13 +549,10 @@ document.addEventListener("submit", async e => {
     const kind = form.dataset.form;
     if (kind === "login") {
       const email = String(values.get("email") || "").trim();
-      const { error } = await supabase.auth.signInWithOtp({
-        email, options: { emailRedirectTo: window.location.origin + window.location.pathname,
-          shouldCreateUser: true }
-      });
+      const password = String(values.get("password") || "");
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      state.loginSent = true; state.authError = "";
-      render();
+      state.authError = "";
     }
     else if (kind === "claim") {
       const code = String(values.get("code") || "").trim();
@@ -544,10 +586,13 @@ document.addEventListener("submit", async e => {
       closeModal(); await loadData(); toast("A little ritual added ♡");
     }
     else if (kind === "save-caption") {
-      const { error } = await supabase.from("photos").update({
-        caption: String(values.get("caption") || "").trim()
-      }).eq("id", form.dataset.id);
-      if (error) throw error;
+      const photo = state.photos.find(p => p.id === form.dataset.id);
+      if (!photo) throw new Error("Photo not found; refresh the gallery.");
+      const caption = String(values.get("caption") || "").trim();
+      const result = photo.metaId
+        ? await supabase.from("photos").update({ caption }).eq("id", photo.metaId)
+        : await supabase.from("photos").insert({ storage_path: photo.storage_path, caption });
+      if (result.error) throw result.error;
       closeModal(); await loadData(); toast("Caption saved ♡");
     }
   } catch (err) {
