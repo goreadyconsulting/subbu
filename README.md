@@ -30,15 +30,12 @@ Go to **Storage → charitha-songs** and upload `.mp3` files. Folders work, too.
 
 **Only upload music you have the rights to store and share.** No songs are bundled with the repository.
 
-### Two-person account setup
-The existing Subbu Auth user is present and has been mapped to the `subbu` site role.
+### Two-person accounts and roles
 
-Create Kittu's account in **Supabase Dashboard → Authentication → Users → Add user → Create new user**:
-- Email: the privately agreed Kittu login address
-- Password: choose the private password agreed by the two users; do not place it in the repository
-- Enable **Auto Confirm User**, because the demonstration email may not be able to receive messages.
+Two confirmed Supabase Auth users are mapped to the `site_members` roles `subbu` and `kittu`.
+The membership table stores the exact Auth user UUIDs; the website never grants an admin role based solely on a typed email address or self-reported metadata.
 
-After creating Kittu's account, bind the new Auth user's UUID to the admin role with a restricted, server-side database update. Do not grant a privileged role based on an email claim alone; the website intentionally does not support public admin registration.
+Subbu's role is a member. Kittu has the admin role and can assign tasks, respond to requests, and manage shared media. Passwords are handled by Supabase Auth and are not stored in GitHub. The two-person content is protected with Row Level Security (RLS) and authenticated RPCs.
 
 Both users have private personal task, message, request and notification centers. Kittu can select existing photos/videos when creating a task. Media titles are never shown in the gallery; `memory_entries` only permits the author to read their entry, and `get_memory_reveals()` only returns the complete two-person exchange after both messages exist.
 
