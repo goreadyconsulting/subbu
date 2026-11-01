@@ -1,6 +1,6 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0?bundle";
-import { duoInit, duoLoad, duoView, duoOpen, duoClick, duoSubmit, duoUnread, duoClear } from "./duo.js";
+import { duoInit, duoLoad, duoView, duoOpen, duoClick, duoSubmit, duoUnread, duoClear } from "./duo.js?v=duo-20261102-v2";
 
 const supabase = createClient(
   "https://mmheljndcdhzzuobjaxz.supabase.co",
