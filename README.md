@@ -2,37 +2,42 @@
 
 A birthday surprise that becomes Charitha's private personal website.
 
-## What is built
-- Birthday homepage and a personal letter
-- Private photo diary (upload, caption, view, remove)
-- Private personal notes (create, edit, pin, delete)
-- Optional weekly activity and habit check-in tracker
-- Passwordless email login and a one-time owner gift code
-- Supabase row-level security and private photo storage
+## Features
 
-## Publishing
-- GitHub repository: https://github.com/goreadyconsulting/subbu
-- Expected GitHub Pages address: https://goreadyconsulting.github.io/subbu/
-- Go to **Repository Settings → Pages → Build and deployment → Source → GitHub Actions**.
-- The supplied `.github/workflows/deploy.yml` workflow publishes the three website files. You may need to rerun it from the Actions tab after enabling Pages.
+- Birthday homepage and **private birthday letter** (letter stored in Supabase; not in public source)
+- Photo diary that discovers images from Supabase Storage automatically, including nested folders
+- Gallery captioning and photo removal, even for pictures uploaded directly in Supabase
+- Private notes (create, edit, pin, delete)
+- Optional daily ritual check-ins
+- Email-and-password login with a one-time private owner claim
+- Supabase Row Level Security and private photo storage
 
-## Supabase
-Project: `mmheljndcdhzzuobjaxz`
+## Website
 
-The database and private bucket have **already been provisioned**. The applied SQL is documented in `supabase/schema.sql`. Do not rerun this migration blindly.
+GitHub Pages: https://goreadyconsulting.github.io/subbu/
 
-**Required for email sign-in:** Supabase dashboard → Authentication → URL Configuration → allow `https://goreadyconsulting.github.io/subbu/` in Redirect URLs. Set Site URL to the same address if this Supabase project is dedicated to Charitha's website.
+The GitHub Pages workflow is in `.github/workflows/deploy.yml`.
 
-## Giving the gift
-1. Share the published site address with Charitha.
-2. Privately share the gift code you received in the ChatGPT conversation. It is *not* stored in this repository.
-3. She signs in using a magic link, then enters the gift code once to claim ownership.
-4. Her gallery, notes and habits are private to the single owner.
+## One-time account setup
 
-The public website is intentionally visible to anyone with the link, but no personal records or private photos are publicly readable. Never publish your plaintext gift code or a Supabase secret/service-role key.
+1. Open the dedicated Supabase project: https://supabase.com/dashboard/project/mmheljndcdhzzuobjaxz
+2. Open **Authentication → Users → Add user → Create new user**.
+3. Use the email and password privately provided for Charitha. Select **Auto Confirm User** when available so she can sign in without requiring a verification link.
+4. Open the website, sign in, and enter the private birthday gift activation code once. This claims the one-person space for that account.
 
-## Technology
-Static HTML, CSS, JavaScript, pinned Supabase JavaScript SDK via ESM CDN. No build tools required.
+**Never commit account passwords, gift codes, or Supabase service-role/secret keys.** The public frontend contains only a publishable key.
 
-## Photo support
-JPG, PNG, WebP, GIF and AVIF, up to 10 MB per image.
+## Preload photographs before she signs in
+
+1. Open **Supabase → Storage → charitha-gallery**.
+2. Keep the bucket **private** (do not make it public).
+3. Upload JPEG, PNG, WebP, GIF, or AVIF images directly into the bucket. The bucket root works; folders work too (for example `memories/`).
+4. Once the owner signs in to the website, **Photo diary** discovers these images by path automatically. No SQL INSERT into `public.photos` is required. You can later add photo captions within the site.
+
+The bucket has a 10 MB per-file limit. If you delete a picture from Supabase Storage, it disappears from the gallery on the next data refresh/sign-in.
+
+## Architecture
+
+Static `index.html`, `styles.css`, `app.js`; a pinned Supabase JS client is loaded from ESM CDN. Database, ownership and storage policies live in Supabase project `mmheljndcdhzzuobjaxz`. The original schema is in `supabase/schema.sql`; additional applied database migrations are tracked in the Supabase dashboard's migration history and can be inspected there.
+
+Access restrictions: the public landing page is visible, but personal photos, notes, daily rituals and birthday message are only accessible to the claimed owner.
