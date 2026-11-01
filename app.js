@@ -688,9 +688,11 @@ function activityEditor() {
       <div class="modal-actions"><button type="submit" class="button button-dark">Add to my rituals ♡</button></div>
     </form>`);
 }
-function photoViewer(id) {
+async function photoViewer(id) {
   const media=state.photos.find(p=>p.id===id);
-  if(media)return duoOpen(media.storage_path);
+  if(!media)return;
+  await duoLoad();
+  return duoOpen(media.storage_path);
 }
 async function uploadPhotos(files) {
   if (!files.length || !state.owner) return;
@@ -800,7 +802,7 @@ document.addEventListener("click", async e => {
     else if (action === "new-activity") activityEditor();
     else if (action === "delete-activity") await removeActivity(id);
     else if (action === "toggle-activity") await toggleActivity(id, target.dataset.date);
-    else if (action === "view-photo") photoViewer(id);
+    else if (action === "view-photo") await photoViewer(id);
     else if (action === "delete-photo") await removePhoto(id);
     else if (action === "refresh-media") { await loadData(); toast("Your latest memories and songs are here ♡"); }
     else if (action === "play-song") await playSong(Number(target.dataset.index));
