@@ -145,7 +145,6 @@ function topbar() {
 function home() {
   const hero = photoByFilename("Hero Section.jpg");
   const heroUrl = hero ? state.photoUrls[hero.id] || "" : "";
-  const heroVisible = Boolean(hero && heroUrl);
   const favourite = ["First Selfie.jpg", "Pottery Date.jpg", "First Temple Visit.jpg", "Her blushing.jpg", "Dino-Rawr.jpg", "Cute video.mp4"];
   const notes = ["One of our very first little moments", "A day worth keeping", "Our first temple visit", "Just you being you", "The cutest little rawr", "A tiny moving memory"];
   const moments = favourite.map((name, i) => storyMoment(name, notes[i])).filter(Boolean).join("");
@@ -482,7 +481,8 @@ async function listPrivateGallery() {
 async function loadData() {
   const lower = new Date();
   lower.setDate(lower.getDate() - 100);
-  const requests = await Promise.all([
+  // A failed notes or playlist request must never hide the birthday photo or sky.
+  const results = await Promise.allSettled([
     supabase.from("notes").select("*").order("pinned", { ascending: false }).order("updated_at", { ascending: false }),
     supabase.from("photos").select("*").order("created_at", { ascending: false }),
     supabase.from("activities").select("*").order("created_at", { ascending: true }),
@@ -491,20 +491,29 @@ async function loadData() {
     listPrivateGallery(),
     listSongs()
   ]);
-  const failure = requests.find(r => r.error);
-  if (failure) { toast("Couldn't load your space: " + failure.error.message); return; }
-  [state.notes, state.photoRecords, state.activities, state.logs] = requests.slice(0, 4).map(r => r.data || []);
-  state.letter = requests[4].data?.body || "";
-  state.songs = requests[6] || [];
-  const birthdayTrack = state.songs.find(song => (song.storage_path || "").split("/").pop().toLowerCase() === "happy birthday song.mp3");
+  const db = results.slice(0, 5).map((result, i) =>
+    result.status === "fulfilled" ? result.value
+      : { data: i === 4 ? null : [], error: result.reason });
+  const problem = db.find(item => item.error);
+  if (problem) toast("Some memories may need a refresh. " + (problem.error?.message || ""));
+  [state.notes, state.photoRecords, state.activities, state.logs] =
+    db.slice(0, 4).map(item => item.data || []);
+  state.letter = db[4]?.data?.body || "";
+
+  state.songs = results[6].status === "fulfilled" ? results[6].value : [];
+  const birthdayTrack = state.songs.find(song =>
+    (song.storage_path || "").split("/").pop().toLowerCase() === "happy birthday song.mp3");
   state.birthdaySongUrl = "";
   if (birthdayTrack) {
-    const { data, error } = await supabase.storage.from("charitha-songs").createSignedUrl(birthdayTrack.storage_path, 7200);
+    const { data, error } = await supabase.storage.from("charitha-songs")
+      .createSignedUrl(birthdayTrack.storage_path, 7200);
     if (!error) state.birthdaySongUrl = data?.signedUrl || "";
   }
-  if(state.songIndex >= state.songs.length) state.songIndex = -1;
+  if (state.songIndex >= state.songs.length) state.songIndex = -1;
+
   const byPath = new Map(state.photoRecords.map(photo => [photo.storage_path, photo]));
-  state.photos = requests[5].map(file => {
+  const listed = results[5].status === "fulfilled" ? results[5].value : [];
+  state.photos = listed.map(file => {
     const photo = byPath.get(file.storage_path);
     return {
       id: photo?.id || "storage:" + file.storage_path,
@@ -514,12 +523,33 @@ async function loadData() {
       created_at: photo?.created_at || file.created_at || new Date().toISOString()
     };
   }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  // The featured image is independently checked, even if folder discovery fails.
+  const featuredPath = "Hero Section.jpg";
+  let featuredUrl = "";
+  if (!state.photos.some(p => p.storage_path.toLowerCase() === featuredPath.toLowerCase())) {
+    const { data, error } = await supabase.storage.from("charitha-gallery")
+      .createSignedUrl(featuredPath, 86400);
+    if (!error && data?.signedUrl) {
+      state.photos.unshift({
+        id: "storage:" + featuredPath,
+        metaId: null,
+        storage_path: featuredPath,
+        caption: "Hero Section",
+        created_at: new Date().toISOString()
+      });
+      featuredUrl = data.signedUrl;
+    }
+  }
   const signed = await Promise.all(state.photos.map(async photo => {
-    const { data, error } = await supabase.storage.from("charitha-gallery").createSignedUrl(photo.storage_path, 86400);
-    if (error) return [photo.id, ""];
-    return [photo.id, data?.signedUrl || ""];
+    if (photo.storage_path === featuredPath && featuredUrl) return [photo.id, featuredUrl];
+    const { data, error } = await supabase.storage.from("charitha-gallery")
+      .createSignedUrl(photo.storage_path, 86400);
+    return [photo.id, error ? "" : data?.signedUrl || ""];
   }));
   state.photoUrls = Object.fromEntries(signed);
+  const failed = signed.filter(([, url]) => !url);
+  if (failed.length) toast("A few photos couldn't load. Tap Refresh in Memories to retry.");
   render();
 }
 async function syncSession(session) {
