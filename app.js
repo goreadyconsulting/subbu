@@ -1,5 +1,6 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0?bundle";
+import { duoInit, duoLoad, duoView, duoOpen, duoClick, duoSubmit, duoUnread, duoClear } from "./duo.js";
 
 const supabase = createClient(
   "https://mmheljndcdhzzuobjaxz.supabase.co",
@@ -10,7 +11,7 @@ const app = document.getElementById("app");
 const modalRoot = document.getElementById("modal-root");
 const toastEl = document.getElementById("toast");
 const state = {
-  session: null, owner: false, view: "login", notes: [], photos: [],
+  session: null, owner: false, role: null, view: "login", notes: [], photos: [],
   activities: [], logs: [], loginSent: false, authError: "",
   claimError: "", loading: true, saving: false, photoUrls: {}, photoRecords: [], letter: "", songs: [], songIndex: -1, birthdaySongUrl: "", birthSkyUrls: {}, birthSkySelection: "art"
 };
@@ -511,9 +512,9 @@ function birthday() {
 function render() {
   if (state.loading) { document.title = "Private Space"; app.innerHTML = '<div class="loading-screen"><div class="loading-flower">✳</div><p>Opening private space…</p></div>'; return; }
   if (!state.session) { document.title = "Private Space"; app.innerHTML = loginPage(); return; }
-  if (!state.owner) { app.innerHTML = claimPage(); return; }
+  if (!state.owner) { app.innerHTML = `<main class="auth-page"><div class="auth-card"><h1>Private access</h1><p>This account has not been added to this space yet.</p><button class="button button-dark" data-action="signout">Sign out</button></div></main>`; return; }
   document.title = "Charitha\u0027s Space ♡";
-  const views = { home, gallery, songs, notes, activities, birthday };
+  const views = {home:()=>state.role==="kittu"?duoView("dashboard"):home(),gallery,songs,notes,activities,birthday,tasks:()=>duoView("tasks"),requests:()=>duoView("requests"),messages:()=>duoView("messages"),notifications:()=>duoView("notifications"),more:()=>duoView("more")};
   const body = (views[state.view] || home)();
   app.innerHTML = `<div class="shell">${nav()}<main class="content">${topbar()}${body}</main></div>`;
 }
@@ -633,20 +634,22 @@ async function loadData() {
   state.photoUrls = Object.fromEntries(signed);
   const failed = signed.filter(([, url]) => !url);
   if (failed.length) toast("A few photos couldn't load. Tap Refresh in Memories to retry.");
+  await duoLoad();
   render();
 }
 async function syncSession(session) {
   const revision = ++identityRevision;
   state.session = session;
   if (!session) {
-    state.owner = false; state.loading = false; state.view = "login";
+    state.owner = false; state.role = null; duoClear(); state.loading = false; state.view = "login";
     state.notes = []; state.photos = []; state.photoRecords = []; state.activities = []; state.logs = []; state.photoUrls = {}; state.letter = ""; state.songs = []; state.songIndex = -1; state.birthdaySongUrl = ""; state.birthSkyUrls = {}; state.birthSkySelection = "art";
     render(); return;
   }
-  const { data, error } = await supabase.from("site_owner").select("user_id").eq("user_id", session.user.id).maybeSingle();
+  const { data, error } = await supabase.from("site_members").select("user_id,role,display_name").eq("user_id", session.user.id).maybeSingle();
   if (revision !== identityRevision) return;
   if (error) toast("Unable to verify access: " + error.message);
   state.owner = Boolean(data);
+  state.role = data?.role || null;
   state.loading = false;
   if (state.owner) {
     if (state.view === "welcome" || state.view === "login") state.view = "home";
@@ -780,6 +783,8 @@ async function toggleActivity(id, day) {
   render();
 }
 document.addEventListener("click", async e => {
+  const duoTarget=e.target.closest("[data-duo-action]");
+  if(duoTarget){try{await duoClick(duoTarget);}catch(err){toast(err.message||"Could not update.");}return;}
   if (e.target.closest("[data-overlay]") && !e.target.closest(".modal")) { closeModal(); return; }
   const target = e.target.closest("[data-action]");
   if (!target) return;
@@ -832,6 +837,9 @@ document.addEventListener("change", async e => {
   }
 });
 document.addEventListener("submit", async e => {
+  const duoForm=e.target.closest("[data-duo-form]");
+  if(duoForm){e.preventDefault();const btn=duoForm.querySelector("[type=submit]");if(btn?.disabled)return;if(btn)btn.disabled=true;
+    try{await duoSubmit(duoForm,new FormData(duoForm));}catch(err){toast(err.message||"Please try again.");}finally{if(btn?.isConnected)btn.disabled=false;}return;}
   const form = e.target.closest("[data-form]");
   if (!form) return;
   e.preventDefault();
@@ -923,6 +931,7 @@ document.addEventListener("ended",e=>{
     playSong(state.songIndex+1).catch(err=>toast(err.message||"Couldn't play the next song."));
   }
 },true);
+duoInit({supabase,state,esc,openModal,render,toast});
 window.CharithaAssistant={
   async accessToken(){const {data}=await supabase.auth.getSession();return data.session?.access_token||null;},
   isOwner(){return Boolean(state.owner && state.session);},
