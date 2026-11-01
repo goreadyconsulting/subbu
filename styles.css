@@ -394,3 +394,40 @@ textarea.field{resize:vertical;min-height:180px}
 @media(max-width:390px){
  .mobile-nav-label{font-size:10px}
 }
+
+/* Guest-facing entry: entirely neutral until authenticated. Optimized for iPhone. */
+.private-access-page{
+  min-height:100vh;
+  min-height:100svh;
+  padding:calc(24px + env(safe-area-inset-top)) max(18px,env(safe-area-inset-left))
+          calc(24px + env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-right));
+  background:radial-gradient(ellipse at 14% 9%,#f2e1e7 0,transparent 43%),
+             radial-gradient(ellipse at 91% 90%,#e7e1f0 0,transparent 45%),#faf7f4;
+}
+.private-access-card{
+  width:min(100%,430px);
+  border-radius:25px;
+  box-shadow:0 22px 64px rgba(75,54,71,.09);
+  text-align:left;
+  padding:clamp(28px,5vw,46px);
+}
+.private-access-card .auth-icon{text-align:center;font-size:43px;line-height:1.1;color:#b6869b;margin:0 0 23px}
+.private-access-card .eyebrow{font-size:10px;letter-spacing:.22em}
+.private-access-card h1{font-size:clamp(37px,8vw,46px);margin:12px 0 12px}
+.private-access-card p{line-height:1.7}
+.private-access-card form{margin-top:28px}
+.private-access-card .form-label{font-size:12px;letter-spacing:.01em}
+.private-access-card .field{min-height:52px;border-radius:13px;font-size:16px}
+.private-access-card .button{width:100%;min-height:52px;margin-top:24px}
+.private-access-card .auth-privacy-note{text-align:center;color:#a796a0;font-size:12px;margin:26px 0 0}
+.private-access-card .auth-error{background:#fbe9e9;color:#995464}
+.birthday-sky-image{display:block;width:100%;height:auto}
+.birthday-sky-image svg{display:block;width:100%;height:auto}
+.birthday-hero-photo.media-unavailable{background:#f3e3e7;min-height:240px}
+.birthday-hero-photo.media-unavailable:after{content:"A memory is taking a moment to appear ♡";font:400 16px var(--hand);text-align:center;color:#9a778c;display:block;padding:22px 12px}
+@media(max-width:760px){
+ .private-access-card{padding:32px 25px;border-radius:23px}
+ .private-access-card .auth-icon{margin-bottom:19px}
+ .private-access-card .auth-privacy-note{font-size:11px}
+ .birthday-sky-image{aspect-ratio:4/3;max-height:480px}
+}
