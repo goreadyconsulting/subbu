@@ -155,7 +155,7 @@ function nav() {
     <nav class="nav-group" aria-label="Main navigation">
       ${entries.map(([v, icon, name]) => `<button title="${name}" class="nav-button ${state.view === v ? "active" : ""}"
         data-action="view" data-view="${v}" aria-current="${state.view === v ? "page" : "false"}">
-        <span class="nav-emoji">${icon}</span><span class="nav-label">${name}</span></button>`).join("")}
+        <span class="nav-emoji">${icon}</span><span class="nav-label desktop-nav-label">${name}</span><span class="nav-label mobile-nav-label">${({ home: "Home", gallery: "Memories", songs: "Songs", notes: "Notes", activities: "Rituals", birthday: "Letter" })[v]}</span></button>`).join("")}
     </nav>
     <div class="sidebar-note"><div class="hand">a gentle reminder ♡</div><p>Your life doesn't have to be perfect to be absolutely lovely.</p></div>
     <div class="sidebar-bottom"><span class="muted" style="font-size:11px">Private & yours</span>
