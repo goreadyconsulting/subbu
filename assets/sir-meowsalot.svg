@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+<title>Sir Meowsalot, the cute knight cat</title>
+<defs>
+<linearGradient id="bg" x2="1" y2="1"><stop stop-color="#fbdedc"/><stop offset="1" stop-color="#e4dbee"/></linearGradient>
+<linearGradient id="steel" x2="1"><stop stop-color="#d4d7e4"/><stop offset=".5" stop-color="#fbfbff"/><stop offset="1" stop-color="#9d9db6"/></linearGradient>
+</defs>
+<circle cx="128" cy="128" r="124" fill="url(#bg)"/>
+<path d="M168 63Q186 35 208 17Q220 44 202 67Q194 77 180 80Z" fill="#dd6b71" stroke="#ad505c" stroke-width="4"/>
+<path d="M50 117 28 36 34 18 59 105" fill="url(#steel)" stroke="#837f97" stroke-width="4"/>
+<path d="M38 107 84 91 89 102 40 119" fill="#e9b65f" stroke="#ad7b37" stroke-width="4"/>
+<path d="M47 119 63 166" stroke="#7e615b" stroke-width="12" stroke-linecap="round"/>
+<path d="M57 171 69 166" stroke="#e9bb63" stroke-width="9" stroke-linecap="round"/>
+<path d="M46 182Q46 145 74 132L111 120Q142 104 186 138Q210 158 211 207L218 238Q171 257 84 245L44 226Z" fill="url(#steel)" stroke="#918ba4" stroke-width="5"/>
+<path d="M49 102 61 56 101 63 124 44 157 60 199 57 211 100" fill="#e9e3e5" stroke="#988e9e" stroke-width="5"/>
+<path d="M77 61 72 18 111 48M171 56 196 24 190 69" fill="#e7a79c" stroke="#947886" stroke-width="5"/>
+<path d="M68 77Q124 50 201 80Q218 132 186 167Q159 200 116 198Q64 195 49 158Q33 117 68 77" fill="#fff8ec" stroke="#bda6a3" stroke-width="5"/>
+<path d="M67 84 96 77M144 72 173 81" stroke="#d7aa89" stroke-width="8" stroke-linecap="round"/>
+<path d="M63 57Q120 32 200 57L214 92Q132 57 45 101Z" fill="url(#steel)" stroke="#8d8c9e" stroke-width="5"/>
+<path d="M76 53V69M105 45V63M134 45V63M164 48V66M192 56V76" stroke="#8d8999" stroke-width="6"/>
+<ellipse cx="95" cy="127" rx="19" ry="24" fill="#533d45"/><ellipse cx="157" cy="128" rx="19" ry="24" fill="#533d45"/>
+<ellipse cx="101" cy="117" rx="8" ry="9" fill="#fff"/><ellipse cx="163" cy="117" rx="8" ry="9" fill="#fff"/>
+<ellipse cx="78" cy="151" rx="15" ry="8" fill="#f4afb5" opacity=".7"/><ellipse cx="176" cy="152" rx="15" ry="8" fill="#f4afb5" opacity=".7"/>
+<path d="M126 139 131 144 121 145Z" fill="#e69891"/>
+<path d="M111 153Q128 177 144 152Q132 157 126 157Q118 157 111 153" fill="#bb6974"/>
+<path d="M101 154 76 149M101 163 77 170M151 154 177 149M151 163 177 170" stroke="#d0a3a0" stroke-width="3" stroke-linecap="round"/>
+<path d="M111 204 134 217 153 202" fill="none" stroke="#c66e7f" stroke-width="15" stroke-linecap="round"/>
+<path d="M124 211Q119 201 113 211Q111 219 124 226Q138 220 136 212Q132 203 124 211" fill="#f5caca" stroke="#b77b8b" stroke-width="2"/>
+<text x="215" y="40" font-size="26" fill="#fff">✦</text>
+</svg>
