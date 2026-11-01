@@ -1,43 +1,57 @@
 # Charitha's Space ♡
 
-A birthday surprise that becomes Charitha's private personal website.
-
-## Features
-
-- Birthday homepage and **private birthday letter** (letter stored in Supabase; not in public source)
-- Memory diary that discovers photos and MP4 videos from private Supabase Storage automatically, including nested folders
-- Gallery captioning, private MP4 playback, and media removal, including files uploaded directly in Supabase
-- Private notes (create, edit, pin, delete)
-- Optional daily ritual check-ins
-- Email-and-password login with a one-time private owner claim
-- Supabase Row Level Security and private photo storage
+A private little home built as a birthday surprise for Charitha: a birthday letter, memories, music, notes, daily rituals, and a tiny cat-knight assistant.
 
 ## Website
+https://goreadyconsulting.github.io/subbu/
 
-GitHub Pages: https://goreadyconsulting.github.io/subbu/
+The site is published from `main` using `.github/workflows/deploy.yml`.
 
-The GitHub Pages workflow is in `.github/workflows/deploy.yml`.
+## Features
+- Birthday landing page and private, personal birthday letter stored in Supabase
+- Private **Memories** with JPG/PNG/WebP/GIF/AVIF photos and MP4 video playback
+- Private **Our songs** MP3 playlist, with play/pause, previous/next, delete and site uploads
+- Private personal notes, and optional daily ritual activity tracker
+- Password sign-in, one-time owner claim, and Supabase RLS
+- **Sir Meowsalot**, a cute sword-bearing cat knight chatbot, shown only to the owner
 
-## One-time account setup
+## Supabase
+Project: `mmheljndcdhzzuobjaxz`
 
-1. Open the dedicated Supabase project: https://supabase.com/dashboard/project/mmheljndcdhzzuobjaxz
-2. Open **Authentication → Users → Add user → Create new user**.
-3. Use the email and password privately provided for Charitha. Select **Auto Confirm User** when available so she can sign in without requiring a verification link.
-4. Open the website, sign in, and enter the private birthday gift activation code once. This claims the one-person space for that account.
+All buckets remain private.
 
-**Never commit account passwords, gift codes, or Supabase service-role/secret keys.** The public frontend contains only a publishable key.
+### Preload pictures and videos before the surprise
+Go to **Storage → charitha-gallery** and upload photos or MP4s. Files can be uploaded to the root or subfolders. Once the owner signs in, they appear automatically under **Memories** without a separate database row.
 
-## Preload photographs before she signs in
+### Preload MP3 songs
+Go to **Storage → charitha-songs** and upload `.mp3` files. Folders work, too. They'll automatically show up under **Our songs**. You can also upload from the website after signing in. The website upload limit is 50 MB per MP3, subject to the project's global storage limit.
 
-1. Open **Supabase → Storage → charitha-gallery**.
-2. Keep the bucket **private** (do not make it public).
-3. Upload JPG, PNG, WebP, GIF, AVIF or MP4 files directly into the bucket. The bucket root works; folders work too (for example `memories/` or `videos/`).
-4. Once the owner signs in to the website, **Memories** discovers these images and MP4 clips automatically. No SQL INSERT into `public.photos` is required. She can play videos and add captions inside the site.
+**Only upload music you have the rights to store and share.** No songs are bundled with the repository.
 
-Website uploads allow images up to 10 MB and MP4 videos up to 50 MB; the actual Supabase project-wide file-size limit also applies (Free plan: maximum 50 MB). The bucket remains private. For larger videos, check the project plan and global Storage limit, and prefer dashboard/resumable upload. MP4s encoded with H.264 video and AAC audio offer the broadest browser compatibility. If you delete a file from Supabase Storage, it disappears from the diary on the next sign-in or data refresh.
+### Account setup
+Use **Supabase → Authentication → Users** to create the email/password user. Passwords must never be written to GitHub or frontend code. The first login requires claiming this private website with its gift code. Only that owner can use the private features.
 
-## Architecture
+## Gemini cat assistant — your remaining Apps Script step
+The frontend and private Supabase Edge Function `charitha-cat` are deployed. The Gemini API key is never kept in GitHub.
 
-Static `index.html`, `styles.css`, `app.js`; a pinned Supabase JS client is loaded from ESM CDN. Database, ownership and storage policies live in Supabase project `mmheljndcdhzzuobjaxz`. The original schema is in `supabase/schema.sql`; additional applied database migrations are tracked in the Supabase dashboard's migration history and can be inspected there.
+1. In Google Apps Script, replace `Code.gs` with the contents of [apps-script/Code.gs](./apps-script/Code.gs).
+2. Open **Project settings → Script properties** and set:
+   - `GEMINI_API_KEY`: your Gemini API key
+   - `CAT_SHARED_SECRET`: the private shared secret provided in our ChatGPT conversation
+   - `GEMINI_MODEL` (optional): default `gemini-3.8-flash`; change to a model your Gemini key can access
+3. Deploy as **Web app → Execute as Me → Who has access: Anyone**. This is safe only with the shared secret check in the provided code.
+4. Give the resulting `https://script.google.com/macros/s/.../exec` URL to ChatGPT. It will be saved server-side to `public.cat_assistant_settings.apps_script_url` in Supabase.
+5. The cat will start answering after the URL is configured. No frontend changes are needed.
 
-Access restrictions: the public landing page is visible, but personal photos, notes, daily rituals and birthday message are only accessible to the claimed owner.
+The chat is sent to a **Supabase Edge Function** which checks the signed-in owner, then forwards a limited conversation to Apps Script. The Edge Function adds the matching secret; Apps Script calls Gemini. Google Apps Script ContentService redirects are followed by the Edge Function, avoiding browser cross-origin problems.
+
+Until Apps Script is connected, the assistant appears with a friendly setup-in-progress message instead of pretending Gemini is active.
+
+## Project files
+- `index.html`, `styles.css`, `app.js`: site + private data
+- `assistant.js`, `assistant.css`: cat-knight chatbot
+- `assets/sir-meowsalot.webp`: generated knight-cat mascot; SVG fallback also included
+- `apps-script/Code.gs`: copy-paste backend without any API keys
+- `supabase/schema.sql`: original database schema; later migrations applied in Supabase
+
+Personal notes/photos, chat auth tokens, the Gemini API key, and the shared secret should **never** be committed to this public repository.
