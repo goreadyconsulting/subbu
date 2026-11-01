@@ -1,6 +1,6 @@
 # Charitha's Space ♡
 
-A private little home built as a birthday surprise for Charitha: a birthday letter, memories, music, notes, daily rituals, and a tiny cat-knight assistant.
+A private birthday site with two signed-in roles: Subbu and Kittu, collaborative memory messages, tasks, requests, direct chat, and the original birthday features.
 
 ## Website
 https://goreadyconsulting.github.io/subbu/
@@ -8,12 +8,14 @@ https://goreadyconsulting.github.io/subbu/
 The site is published from `main` using `.github/workflows/deploy.yml`.
 
 ## Features
-- Birthday landing page and private, personal birthday letter stored in Supabase
+- Neutral login first. Birthday content and private letter are shown only after a recognized member signs in.
 - Private **Memories** with JPG/PNG/WebP/GIF/AVIF photos and MP4 video playback
 - Private **Our songs** MP3 playlist, with play/pause, previous/next, delete and site uploads
 - Private personal notes, and optional daily ritual activity tracker
-- Password sign-in, one-time owner claim, and Supabase RLS
-- **Sir Meowsalot**, a cute sword-bearing cat knight chatbot, shown only to the owner
+- Two separate roles: Subbu (personal birthday space, assigned tasks, requests) and Kittu (admin, assignment and responses)
+- Individual Task, Request, Message and Notification centers with Supabase Row Level Security
+- Photo/video tiles display no titles. Each member can independently write a title and message, and the two sealed messages reveal together only after both submit.
+- **Sir Meowsalot**, a cute sword-bearing cat knight chatbot, shown only to approved members
 
 ## Supabase
 Project: `mmheljndcdhzzuobjaxz`
@@ -28,8 +30,17 @@ Go to **Storage → charitha-songs** and upload `.mp3` files. Folders work, too.
 
 **Only upload music you have the rights to store and share.** No songs are bundled with the repository.
 
-### Account setup
-Use **Supabase → Authentication → Users** to create the email/password user. Passwords must never be written to GitHub or frontend code. The first login requires claiming this private website with its gift code. Only that owner can use the private features.
+### Two-person account setup
+The existing Subbu Auth user is present and has been mapped to the `subbu` site role.
+
+Create Kittu's account in **Supabase Dashboard → Authentication → Users → Add user → Create new user**:
+- Email: `kittu1101@subbu.com`
+- Password: choose the private password agreed by the two users; do not place it in the repository
+- Enable **Auto Confirm User**, because the demonstration email may not be able to receive messages.
+
+On Kittu's first successful login, the server-side `activate_kittu_membership()` function verifies the Auth user's ID, confirmed email and the exact approved address before assigning the `kittu` admin role. No additional RLS edits are required.
+
+Both users have private personal task, message, request and notification centers. Kittu can select existing photos/videos when creating a task. Media titles are never shown in the gallery; `memory_entries` only permits the author to read their entry, and `get_memory_reveals()` only returns the complete two-person exchange after both messages exist.
 
 ## Gemini cat assistant — your remaining Apps Script step
 The frontend and private Supabase Edge Function `charitha-cat` are deployed. The Gemini API key is never kept in GitHub.
@@ -43,13 +54,14 @@ The frontend and private Supabase Edge Function `charitha-cat` are deployed. The
 4. Give the resulting `https://script.google.com/macros/s/.../exec` URL to ChatGPT. It will be saved server-side to `public.cat_assistant_settings.apps_script_url` in Supabase.
 5. The cat will start answering after the URL is configured. No frontend changes are needed.
 
-The chat is sent to a **Supabase Edge Function** which checks the signed-in owner, then forwards a limited conversation to Apps Script. The Edge Function adds the matching secret; Apps Script calls Gemini. Google Apps Script ContentService redirects are followed by the Edge Function, avoiding browser cross-origin problems.
+The chat is sent to a **Supabase Edge Function** which checks membership in the private site, then forwards a limited conversation to Apps Script. The Edge Function adds the matching secret; Apps Script calls Gemini. Google Apps Script ContentService redirects are followed by the Edge Function, avoiding browser cross-origin problems.
 
-Until Apps Script is connected, the assistant appears with a friendly setup-in-progress message instead of pretending Gemini is active.
+The Google Apps Script deployment URL is stored in Supabase settings and is not published in the GitHub source.
 
 ## Project files
 - `index.html`, `styles.css`, `app.js`: site + private data
 - `assistant.js`, `assistant.css`: cat-knight chatbot
+- `duo.js`, `duo.css`: tasks, requests, direct messages, notifications and sealed memory exchanges
 - `assets/sir-meowsalot.webp`: generated knight-cat mascot; SVG fallback also included
 - `apps-script/Code.gs`: copy-paste backend without any API keys
 - `supabase/schema.sql`: original database schema; later migrations applied in Supabase
