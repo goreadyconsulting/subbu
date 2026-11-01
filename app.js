@@ -234,6 +234,7 @@ function gallery() {
     <div class="page-heading"><div><span class="eyebrow">01 / your memories</span>
       <h1 class="page-title">Memory <em>diary.</em></h1>
       <p>A cosy little home for the photos and videos you want to keep.</p></div>
+      <button type="button" class="button button-outline button-small" data-action="refresh-media" style="margin-right:8px">↻ Refresh</button>
       <label class="button button-dark file-button">+ Add memories
         <input type="file" id="photo-upload" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,.mp4" multiple aria-label="Upload photos and videos"></label>
     </div>
@@ -261,6 +262,7 @@ function songs() {
         <h1 class="page-title">Our <em>songs.</em></h1>
         <p>The songs you want to keep close, all in one little place.</p>
       </div>
+      <button type="button" class="button button-outline button-small" data-action="refresh-media" style="margin-right:8px">↻ Refresh</button>
       <label class="button button-dark file-button">+ Add a song
         <input type="file" data-media="songs" accept=".mp3,audio/mpeg,audio/mp3" multiple aria-label="Upload MP3 songs">
       </label>
@@ -686,6 +688,7 @@ document.addEventListener("click", async e => {
     else if (action === "toggle-activity") await toggleActivity(id, target.dataset.date);
     else if (action === "view-photo") photoViewer(id);
     else if (action === "delete-photo") await removePhoto(id);
+    else if (action === "refresh-media") { await loadData(); toast("Your latest memories and songs are here ♡"); }
     else if (action === "play-song") await playSong(Number(target.dataset.index));
     else if (action === "song-next") await playSong(state.songIndex < 0 ? 0 : state.songIndex + 1);
     else if (action === "song-prev") await playSong(state.songIndex < 0 ? 0 : state.songIndex - 1);
