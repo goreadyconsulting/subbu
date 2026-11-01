@@ -161,7 +161,7 @@ textarea.field{resize:vertical;min-height:180px}
 .check-day{height:35px;width:35px;display:grid;place-items:center;border-radius:11px;border:1px solid #e2dada;background:#fff;color:#b8a7ac;font-weight:700;font-size:16px;justify-self:center}
 .check-day.done{background:#d7e7d5;border-color:#d7e7d5;color:#5b8860}
 .check-day:hover{border-color:#bb94a2}
-.habit-day-controls{grid-column:span 7;display:grid;grid-template-columns:repeat(7,50px);gap:8px;justify-content:space-between}
+.habit-day-controls{grid-column:span 7;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;width:100%}
 .delete-mini{background:transparent;border:0;color:#c4b2ba;font-size:19px}
 .mini-hint{font-size:12px;color:#aa9ca0;margin-top:15px}
 .birthday-letter{max-width:760px;margin:32px auto;padding:50px 58px;background:#fffdfa;box-shadow:0 16px 42px #5c3c4c0b;border:1px solid #f0e8e4;border-radius:22px;position:relative;transform:rotate(-.5deg)}
