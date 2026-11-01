@@ -507,7 +507,7 @@ function render() {
   if (!state.session) { document.title = "Private Space"; app.innerHTML = loginPage(); return; }
   if (!state.owner) { app.innerHTML = `<main class="auth-page"><div class="auth-card"><h1>Private access</h1><p>This account has not been added to this space yet.</p><button class="button button-dark" data-action="signout">Sign out</button></div></main>`; return; }
   document.title = "Charitha\u0027s Space ♡";
-  const views = {home:()=>state.role==="kittu"?duoView("dashboard"):home(),gallery,songs,notes,activities,birthday,tasks:()=>duoView("tasks"),requests:()=>duoView("requests"),messages:()=>duoView("messages"),notifications:()=>duoView("notifications"),more:()=>duoView("more")};
+  const views = {home:()=>state.role==="kittu"?duoView("dashboard"):home(),gallery,songs,notes,activities,birthday,"birth-story":home,tasks:()=>duoView("tasks"),requests:()=>duoView("requests"),messages:()=>duoView("messages"),notifications:()=>duoView("notifications"),more:()=>duoView("more")};
   const body = (views[state.view] || home)();
   app.innerHTML = `<div class="shell">${nav()}<main class="content">${topbar()}${body}</main></div>`;
 }
