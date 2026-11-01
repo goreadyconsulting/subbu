@@ -651,13 +651,13 @@ async function syncSession(session) {
     await loadData();
   } else render();
 }
-function openModal(markup, wide = false) {
+function openModal(markup, wide = false, focusField = true) {
   modalRoot.innerHTML = `<div class="modal-overlay" data-overlay="true">
     <section class="modal ${wide ? "modal-wide" : ""}" role="dialog" aria-modal="true" aria-label="Edit your space">
       <button type="button" class="modal-close" data-action="close-modal" aria-label="Close">×</button>
       ${markup}
     </section></div>`;
-  const field = modalRoot.querySelector("input:not([type='checkbox']), textarea");
+  const field = focusField ? modalRoot.querySelector("input:not([type='checkbox']), textarea") : null;
   if (field) field.focus();
 }
 function closeModal() { modalRoot.innerHTML = ""; }
