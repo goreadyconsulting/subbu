@@ -39,6 +39,16 @@ Subbu's role is a member. Kittu has the admin role and can assign tasks, respond
 
 Both users have private personal task, message, request and notification centers. Kittu can select existing photos/videos when creating a task. Media titles are never shown in the gallery; `memory_entries` only permits the author to read their entry, and `get_memory_reveals()` only returns the complete two-person exchange after both messages exist.
 
+## Vision Board 2027 — Charitha's personal space
+
+Daily Rituals has been replaced in the website navigation by Vision Board 2027. The old activities and logs remain stored; nothing was deleted.
+
+The board is **owned by Charitha (Subbu)**. She alone can view or change the complete private goal records, add/edit/delete a goal, read personal notes, choose status, search Wikimedia Commons reference photos, or upload to the private `charitha-vision` storage bucket. Her board offers a two-column iPhone collage and a List view.
+
+**Omkar (Kittu)** sees a separate, minimal, read-only *Her Dreams · Overview* screen with only goal names, status labels, and aggregate counts. The website never queries the full `vision_board_items` table or requests private picture URLs on his account. Database RLS prevents it, and the authenticated server-side `get_partner_vision_overview()` RPC returns only `title` and `stage`. Kittu's account shows the admin dashboard, collaboration tools, shared Memories, and the small dreams overview instead of Charitha's personal birthday, notes or music sections.
+
+Online photo suggestions are from Wikimedia Commons and preserve author/license/source attribution. External image availability can change; private uploads are preferred for permanent memories.
+
 ## Gemini cat assistant — your remaining Apps Script step
 The frontend and private Supabase Edge Function `charitha-cat` are deployed. The Gemini API key is never kept in GitHub.
 
