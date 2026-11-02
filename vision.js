@@ -1,10 +1,11 @@
 let V;
-let items=[], imageUrls={}, view="board", results=[], selectedWeb=null, clearImage=false, currentEdit=null;
+let items=[], supporterItems=[], imageUrls={}, view="board", results=[], selectedWeb=null, clearImage=false, currentEdit=null;
 const esc=x=>V.esc(x??"");
 const stages={dreaming:"Dreaming",in_progress:"In progress",achieved:"Achieved"};
 export function visionInit(context){V=context;}
-export function visionClear(){items=[];imageUrls={};view="board";results=[];selectedWeb=null;clearImage=false;currentEdit=null;}
-export function visionCount(){return items.length;}
+export function visionClear(){items=[];supporterItems=[];imageUrls={};view="board";results=[];selectedWeb=null;clearImage=false;currentEdit=null;}
+export function visionCount(){return V?.state?.role==="kittu"?supporterItems.length:items.length;}
+const charithaRole=()=>V?.state?.owner&&V.state.role==="subbu";
 function picture(item){return item.image_source==="upload"?imageUrls[item.id]||"":item.image_source==="web"?item.image_url||"":"";}
 function credit(item){
  if(item.image_source!=="web"||!item.image_page_url)return "";
@@ -17,6 +18,16 @@ function heroImage(item){const img=picture(item);return img
  :placeholder();}
 export async function visionLoad(){
  if(!V?.state.owner)return;
+ if(V.state.role==="kittu"){
+   // Kittu must never fetch the private board table or its signed photos.
+   items=[];imageUrls={};
+   const {data,error}=await V.supabase.rpc("get_partner_vision_overview");
+   if(error)throw error;
+   supporterItems=(data||[]).map(({title,stage})=>({title,stage}));
+   return;
+ }
+ if(!charithaRole())return;
+ supporterItems=[];
  const {data,error}=await V.supabase.from("vision_board_items").select("*").eq("year",2027).order("created_at",{ascending:false});
  if(error)throw error;
  items=data||[];
@@ -26,7 +37,42 @@ export async function visionLoad(){
  }));
  imageUrls=Object.fromEntries(signed);
 }
+function supporterVisionView(){
+ const total=supporterItems.length;
+ const achieved=supporterItems.filter(item=>item.stage==="achieved").length;
+ const inProgress=supporterItems.filter(item=>item.stage==="in_progress").length;
+ return `<section class="vision-page vision-supporter">
+   <header class="vision-heading">
+     <span class="eyebrow">A LITTLE CHEERLEADING CORNER</span>
+     <h1>Charitha's <em>dreams.</em> <span>2027 ♡</span></h1>
+     <p>This is her space to dream and plan. You're here to cheer her on, not manage her wishlist.</p>
+   </header>
+   <div class="vision-supporter-intro">
+      <div class="vision-supporter-heart" aria-hidden="true">♡</div>
+      <h2>Her dreams, her story.</h2>
+      <p>When a dream becomes real, you'll get to celebrate it with her. The plans and pictures are hers to keep.</p>
+   </div>
+   <div class="vision-supporter-stats" aria-label="Dream progress summary">
+     <div><strong>${total}</strong><span>Dreams</span></div>
+     <div><strong>${inProgress}</strong><span>In progress</span></div>
+     <div><strong>${achieved}</strong><span>Achieved</span></div>
+   </div>
+   ${total?`<div class="vision-supporter-goals">
+      <h2>The little things she's dreaming of</h2>
+      ${supporterItems.map(item=>`<div class="vision-supporter-goal">
+         <span class="vision-supporter-goal-icon" aria-hidden="true">✦</span>
+         <span class="vision-supporter-goal-name">${esc(item.title)}</span>
+         <span class="vision-stage ${esc(item.stage)}">${esc(stages[item.stage]||"Dreaming")}</span>
+      </div>`).join("")}
+    </div>`:
+    `<div class="vision-supporter-empty"><span>✧</span><h2>A whole year of possibilities.</h2>
+       <p>When Charitha adds her first dream, a small update will appear here.</p>
+     </div>`}
+   <p class="vision-supporter-signoff">You don't have to build the board. Just be in her corner. ♡</p>
+ </section>`;
+}
 export function visionView(){
+ if(V?.state?.role==="kittu")return supporterVisionView();
  const board=view==="board";
  const total=items.length,achieved=items.filter(x=>x.stage==="achieved").length;
  const content=total?(board
@@ -129,6 +175,7 @@ function selectedMarkup(){
  <button type="button" data-vision="unselect" class="vision-text-link">Clear selection</button></div></div>`;
 }
 export function visionOpen(id=null){
+ if(!charithaRole())return;
  currentEdit=items.find(x=>x.id===id)||null;
  results=[];selectedWeb=null;clearImage=false;
  const item=currentEdit;
@@ -190,6 +237,7 @@ async function findPictures(){
  }catch(err){if(notice.isConnected)notice.textContent=err.message||"Couldn't find images. Try again.";}
 }
 export async function visionClick(button){
+ if(!charithaRole())return;
  const act=button.dataset.vision;
  if(act==="board"||act==="list"){view=act;V.render();return;}
  if(act==="add"){visionOpen();return;}
@@ -230,7 +278,7 @@ function validFile(file){
  return ["image/jpeg","image/png","image/webp","image/avif"].includes(file.type)&&file.size<=10*1024*1024;
 }
 export async function visionSubmit(form,fd){
- if(!V.state.owner)throw Error("Sign in to edit your vision board.");
+ if(!charithaRole())throw Error("Only Charitha can edit her vision board.");
  const id=form.dataset.id;
  const item=items.find(x=>x.id===id)||null;
  const title=String(fd.get("title")||"").trim();
