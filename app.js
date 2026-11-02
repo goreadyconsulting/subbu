@@ -643,24 +643,62 @@ async function loadData() {
 }
 async function syncSession(session) {
   const revision = ++identityRevision;
-  state.session = session;
-  if (!session) {
-    state.owner = false; state.role = null; duoClear(); visionClear(); state.loading = false; state.view = "login";
-    state.notes = []; state.photos = []; state.photoRecords = []; state.activities = []; state.logs = []; state.photoUrls = {}; state.letter = ""; state.songs = []; state.songIndex = -1; state.birthdaySongUrl = ""; state.birthSkyUrls = {}; state.birthSkySelection = "art";
-    render(); return;
+  const oldUserId = state.session?.user?.id || null;
+  const newUserId = session?.user?.id || null;
+
+  // Never display an account's private data before the restored login has
+  // been verified. This also prevents a flash of the previous account's data.
+  if (newUserId && oldUserId !== newUserId) {
+    state.loading = true;
+    state.owner = false;
+    state.role = null;
+    state.view = "login";
+    duoClear();
+    visionClear();
+    state.notes = []; state.photos = []; state.photoRecords = [];
+    state.activities = []; state.logs = []; state.photoUrls = {};
+    state.letter = ""; state.songs = []; state.songIndex = -1;
+    state.birthdaySongUrl = ""; state.birthSkyUrls = {}; state.birthSkySelection = "art";
+    render();
   }
+  state.session = session;
+
+  if (!session) {
+    state.owner = false; state.role = null; duoClear(); visionClear();
+    state.loading = false; state.view = "login";
+    state.notes = []; state.photos = []; state.photoRecords = [];
+    state.activities = []; state.logs = []; state.photoUrls = {};
+    state.letter = ""; state.songs = []; state.songIndex = -1;
+    state.birthdaySongUrl = ""; state.birthSkyUrls = {}; state.birthSkySelection = "art";
+    render();
+    return;
+  }
+
   const { data, error } = await supabase.from("site_members")
     .select("user_id,role,display_name").eq("user_id",session.user.id).maybeSingle();
   if (revision !== identityRevision) return;
   if (error) toast("Unable to verify access: " + error.message);
   state.owner = Boolean(data);
   state.role = data?.role || null;
-  state.loading = false;
-  if (state.owner) {
-    if (state.view === "welcome" || state.view === "login") state.view = "home";
+
+  if (!state.owner) {
+    state.loading = false;
     render();
+    return;
+  }
+
+  if (state.view === "welcome" || state.view === "login") state.view = "home";
+  try {
+    // Keep the bouncing hearts onscreen while private images, songs and
+    // the two user-specific workspaces finish their first load.
     await loadData();
-  } else render();
+  } catch (err) {
+    if (revision === identityRevision) toast("Some content couldn't load. Please refresh to try again.");
+    console.warn("Initial content loading failed:", err);
+  }
+  if (revision !== identityRevision) return;
+  state.loading = false;
+  render();
 }
 function openModal(markup, wide = false, focusField = true) {
   modalRoot.innerHTML = `<div class="modal-overlay" data-overlay="true">
