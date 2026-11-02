@@ -57,7 +57,7 @@ The **preferred setup** is Supabase direct Gemini:
 1. Create or locate a Gemini API key in [Google AI Studio](https://aistudio.google.com/app/apikey).
 2. Open [Supabase Edge Functions secrets](https://supabase.com/dashboard/project/mmheljndcdhzzuobjaxz/functions/secrets).
 3. Add the secret `GEMINI_API_KEY` with the Gemini API key as the value.
-4. Optional: add `GEMINI_MODEL` with value `gemini-3.5-flash`. If omitted, `gemini-3.5-flash` is the default.
+4. Optional: add `GEMINI_MODEL` with a supported Gemini model ID, e.g. `gemini-3.8-flash`. If omitted, `gemini-3.5-flash-lite` is the default (a valid stable Flash-Lite model).
 5. Sign back in and send a test message in Kitteshwar.
 
 The deployed private Edge Function `charitha-cat` authenticates both approved members; it reads the Gemini key only from server-side secrets, never frontend JavaScript. It calls the Gemini API directly if `GEMINI_API_KEY` is present.
