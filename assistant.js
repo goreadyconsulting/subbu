@@ -1,25 +1,25 @@
-// Sir Meowsalot lives on Charitha's private pages.
+// Kitteshwar is Charitha's private cat-knight companion.
 // Gemini calls travel via a protected Supabase function; no secret keys in the browser.
 const endpoint = "https://mmheljndcdhzzuobjaxz.supabase.co/functions/v1/charitha-cat";
 const publishableKey = "sb_publishable_r0_1AHq4VCNCcjRwJnFJeQ_eHSmnX3d";
 const root = document.createElement("aside");
 root.id = "catbot-root";
 root.hidden = true;
-root.setAttribute("aria-label", "Sir Meowsalot assistant");
+root.setAttribute("aria-label", "Kitteshwar assistant");
 root.innerHTML = `
-  <button id="catbot-launch" type="button" aria-expanded="false" aria-controls="catbot-panel" aria-label="Chat with Sir Meowsalot">
+  <button id="catbot-launch" type="button" aria-expanded="false" aria-controls="catbot-panel" aria-label="Chat with Kitteshwar">
     <img src="./assets/sir-meowsalot.svg" alt="Tiny cat knight holding a sword">
     <span class="catbot-twinkle" aria-hidden="true">✦</span>
   </button>
-  <section id="catbot-panel" role="dialog" aria-label="Sir Meowsalot chat" aria-modal="false" hidden>
+  <section id="catbot-panel" role="dialog" aria-label="Kitteshwar chat" aria-modal="false" hidden>
     <div class="catbot-header">
       <img src="./assets/sir-meowsalot.svg" alt="" class="catbot-head-avatar">
-      <div class="catbot-heading"><strong>Sir Meowsalot</strong>
-        <small>your tiny, very brave knight ⚔</small></div>
+      <div class="catbot-heading"><strong>Kitteshwar</strong>
+        <small>your tiny cat-knight companion ♡</small></div>
       <button type="button" id="catbot-close" aria-label="Close chat">×</button>
     </div>
     <div id="catbot-scroll" role="log" aria-live="polite" aria-relevant="additions text">
-      <div class="catbot-bubble bot">Mew! 🐾 I'm Sir Meowsalot, sworn defender of your smile. Ask me something, my lady! ♡</div>
+      <div class="catbot-bubble bot">Hi, I'm Kitteshwar! 🐾 Your little cat-knight is here for plans, dreams, silly ideas, and anything on your mind. ♡</div>
     </div>
     <div class="catbot-suggestions" aria-label="Conversation starters">
       <button type="button" data-cat-suggest="Give me a tiny pep talk">A little pep talk ✨</button>
@@ -87,7 +87,7 @@ async function sendMessage(text) {
   sendButton.disabled = true;
   input.value = "";
   addMessage(text, "user");
-  const wait = addMessage("My little whiskers are thinking… ✨", "thinking");
+  const wait = addMessage("Kitteshwar is thinking… ✨", "thinking");
   try {
     const jwt = await window.CharithaAssistant.accessToken();
     if (!jwt) throw new Error("Please sign in to chat.");
@@ -107,7 +107,7 @@ async function sendMessage(text) {
     });
     const data = await response.json();
     if (!response.ok || !data?.ok || typeof data.reply !== "string") {
-      throw new Error(typeof data?.error === "string" ? data.error : "I'm having a tiny technical adventure. Please try again.");
+      throw new Error(typeof data?.error === "string" ? data.error : "Kitteshwar couldn't get a response right now. Please try again.");
     }
     wait.remove();
     addMessage(data.reply, "bot");
@@ -115,7 +115,7 @@ async function sendMessage(text) {
     chatHistory = chatHistory.slice(-10);
   } catch (error) {
     wait.remove();
-    addMessage(error?.message || "Mew… I can't reach my magic just now.", "notice");
+    addMessage(error?.message || "Kitteshwar couldn't reach the AI service just now.", "notice");
   } finally {
     busy = false;
     sendButton.disabled = false;
