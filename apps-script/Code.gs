@@ -1,5 +1,5 @@
 /**
- * Sir Meowsalot • Apps Script Gemini brain
+ * Kitteshwar • Apps Script Gemini brain
  * Paste into Code.gs and deploy as Web App.
  *
  * Script Properties:
@@ -9,10 +9,10 @@
  *
  * Deploy: Execute as Me; Who has access: Anyone.
  * Calls originate from a private Supabase Edge Function that authenticates
- * Charitha and sends the matching shared secret. No keys belong on the website.
+ * a verified account and sends the matching shared secret. No keys belong on the website.
  */
 function doGet() {
-  return catJson_({ ok: true, service: "Sir Meowsalot", status: "ready" });
+  return catJson_({ ok: true, service: "Kitteshwar", status: "ready" });
 }
 
 function doPost(e) {
@@ -20,13 +20,15 @@ function doPost(e) {
     var props = PropertiesService.getScriptProperties();
     var secret = props.getProperty("CAT_SHARED_SECRET");
     var apiKey = props.getProperty("GEMINI_API_KEY");
-    if (!secret || !apiKey) return catJson_({ ok: false, error: "Brain isn't configured yet." });
+    if (!secret) return catJson_({ ok: false, error: "Kitteshwar is missing CAT_SHARED_SECRET in Apps Script settings." });
+    if (!apiKey) return catJson_({ ok: false, error: "Kitteshwar is missing GEMINI_API_KEY in Apps Script settings." });
     if (!e || !e.postData || !e.postData.contents) return catJson_({ ok: false, error: "Missing message." });
     var req = JSON.parse(e.postData.contents);
     if (req.secret !== secret) return catJson_({ ok: false, error: "Not authorised." });
     var message = String(req.message || "").trim().slice(0, 1400);
     if (!message) return catJson_({ ok: false, error: "Please type a message." });
     var page = String(req.page || "Charitha's Space").slice(0, 100);
+    var visitor = req.userName === "Kittu" ? "Kittu" : "Subbu";
 
     var history = Array.isArray(req.history) ? req.history.slice(-10) : [];
     var turns = [];
@@ -39,19 +41,18 @@ function doPost(e) {
     turns.push({ role: "user", parts: [{ text: message }] });
 
     var persona = [
-      "You are Sir Meowsalot, a tiny valiant cat knight who carries a little sword.",
-      "You live in Charitha's Space, a birthday gift website for Charitha Aluru.",
-      "Speak warmly, whimsically and playfully, occasionally using charming cat-and-knight imagery.",
-      "You are helpful rather than annoying; respond naturally, without repeating 'mew' every line.",
-      "Be concise (usually 1-4 sentences); offer more detail when asked.",
-      "Help with journal prompts, short notes, motivational encouragement, song ideas,",
-      "captions for photos, daily activity suggestions, and navigation.",
-      "Sections of the site include Memories (photos/videos), Our songs (MP3 player),",
-      "Notes to self, Daily rituals, and a private birthday letter.",
-      "You cannot see, read, or modify any private notes, gallery files, songs, or account data.",
-      "Never pretend that you can. Do not request passwords, gift codes, or API keys.",
-      "Do not claim to be the person who made the website, or speak as the romantic partner.",
-      "If feeling overwhelmed, respond kindly without minimising feelings.",
+      "You are Kitteshwar, Charitha's little cat-knight AI companion.",
+      "You live in Charitha's Space, a birthday gift website for Charitha Aluru from Omkar.",
+      "The signed-in visitor is " + visitor + ". Subbu is Charitha; Kittu is Omkar.",
+      visitor === "Subbu" ?
+        "This is Charitha's personal dream website. Help her plan goals for Vision Board 2027, write creative notes, and work through her ideas." :
+        "Help Omkar support Charitha. He has a simplified admin account and a read-only overview of her dreams.",
+      "Speak warmly, helpfully and playfully, sometimes using gentle cat-and-knight imagery.",
+      "Be concise (usually 1–4 sentences). Offer more detail when asked.",
+      "Sections include Memories, Messages, Tasks, Requests, Notifications, and Vision Board 2027.",
+      "You cannot access private notes, vision photos, messages, or song files. Never pretend you can.",
+      "Do not request passwords, script properties, tokens, or API keys.",
+      "Never pretend to be Charitha or Omkar.",
       "Current section: " + page
     ].join("\n");
 
@@ -66,7 +67,7 @@ function doPost(e) {
       payload: JSON.stringify({
         systemInstruction: { parts: [{ text: persona }] },
         contents: turns,
-        generationConfig: { temperature: 0.8, maxOutputTokens: 900 }
+        generationConfig: { maxOutputTokens: 900 }
       }),
       followRedirects: true,
       muteHttpExceptions: true
@@ -80,7 +81,7 @@ function doPost(e) {
     if (!reply) return catJson_({ ok: false, error: "I'm out of words for a tiny moment. Please try again!" });
     return catJson_({ ok: true, reply: reply });
   } catch (error) {
-    console.error("Sir Meowsalot backend error: " + String(error));
+    console.error("Kitteshwar backend error: " + String(error));
     return catJson_({ ok: false, error: "My knightly magic needs a moment. Please try again!" });
   }
 }
