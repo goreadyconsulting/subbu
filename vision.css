@@ -123,3 +123,37 @@
 .vision-home-teaser p{max-width:580px;margin:0 auto 22px;color:#957d8b;font-size:14px;line-height:1.8}
 .vision-home-teaser .button{min-height:49px}
 @media(max-width:760px){.vision-home-teaser{padding:31px 17px;margin-bottom:50px}.vision-home-teaser h2{font-size:34px}}
+
+/* Omkar/Kittu sees a deliberately different, read-only dream overview. */
+.vision-supporter{max-width:825px;margin-inline:auto}
+.vision-supporter-intro{border-radius:26px;border:1px solid #eadce4;background:radial-gradient(circle at 85% 20%,#ffeef0,transparent 45%),linear-gradient(130deg,#f7ecf1,#fff9f3);text-align:center;padding:33px 24px 34px;margin:20px 0}
+.vision-supporter-heart{font:400 86px/1 var(--serif);color:#bf8ca3}
+.vision-supporter-intro h2{font:400 34px/1.2 var(--serif);color:#725066;margin:12px 0}
+.vision-supporter-intro p{max-width:460px;margin:auto;color:#8e7785;font-size:14px;line-height:1.8}
+.vision-supporter-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0 30px}
+.vision-supporter-stats>div{border-radius:18px;border:1px solid #ecdee3;background:#fffdfb;padding:18px 11px;text-align:center;display:flex;flex-direction:column;gap:4px}
+.vision-supporter-stats strong{font:400 40px/1.2 var(--serif);color:#82617a}
+.vision-supporter-stats span{font-weight:600;font-size:12px;color:#917c8b}
+.vision-supporter-goals{margin:26px 0}
+.vision-supporter-goals h2{font:400 26px var(--serif);color:#79576b;margin:0 0 12px}
+.vision-supporter-goal{display:flex;align-items:center;gap:12px;border-radius:16px;background:#fffdfb;border:1px solid #ecdee4;padding:13px 15px;margin:9px 0}
+.vision-supporter-goal-icon{font:400 25px var(--serif);color:#c294a9}
+.vision-supporter-goal-name{flex:1;min-width:0;overflow-wrap:anywhere;font:400 21px var(--serif);color:#6d5264}
+.vision-supporter-goal .vision-stage{margin:0;white-space:nowrap}
+.vision-supporter-empty{text-align:center;padding:32px 18px;border-radius:19px;background:#f8eff2;border:1px dashed #e6c9d6}
+.vision-supporter-empty>span{font:400 66px var(--serif);color:#c18ba5}
+.vision-supporter-empty h2{font:400 26px var(--serif);color:#795769;margin:12px 0}
+.vision-supporter-empty p{font-size:13px;color:#947c88}
+.vision-supporter-signoff{text-align:center;font:400 20px var(--hand);color:#aa8095;margin:26px 8px 40px}
+@media(max-width:760px){
+ .vision-supporter-intro{padding:27px 17px}
+ .vision-supporter-intro h2{font-size:30px}
+ .vision-supporter-heart{font-size:69px}
+ .vision-supporter-stats{gap:7px}
+ .vision-supporter-stats>div{padding:14px 6px;border-radius:13px}
+ .vision-supporter-stats strong{font-size:31px}
+ .vision-supporter-stats span{font-size:10px}
+ .vision-supporter-goal{padding:11px 12px;gap:9px}
+ .vision-supporter-goal-name{font-size:18px}
+ .vision-supporter-goal .vision-stage{font-size:9px}
+}
