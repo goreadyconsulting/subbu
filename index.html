@@ -11,15 +11,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=sky-20261102">
+  <link rel="stylesheet" href="./styles.css?v=hearts-auth-20261102">
   <link rel="stylesheet" href="./assistant.css">
   <link rel="stylesheet" href="./duo.css?v=duo-20261102-v2">
   <link rel="stylesheet" href="./vision.css?v=vision-20261102-supporter">
-  <script type="module" src="./app.js?v=kitteshwar-20261102"></script>
+  <script type="module" src="./app.js?v=hearts-auth-20261102"></script>
   <script type="module" src="./assistant.js?v=kitteshwar-original-cat-20261102"></script>
 </head>
 <body>
-  <div id="app"><div class="loading-screen"><div class="loading-flower">✳</div><p>Opening private space…</p></div></div>
+  <div id="app"><div class="loading-screen" role="status" aria-label="Opening private space">
+    <div class="loading-hearts" aria-hidden="true"><span class="loading-heart"></span><span class="loading-heart"></span><span class="loading-heart"></span></div>
+    <span class="loading-sr-only">Opening private space</span>
+  </div></div>
   <div id="modal-root"></div>
   <div id="toast" aria-live="polite" role="status"></div>
 </body>
