@@ -28,7 +28,7 @@ export function duoView(v){
  const kt=kittu();
  if(v==="dashboard")return `<section class="duo-center">${heading("OUR LITTLE SPACE","Hi, Kittu. ♡","Your corner for everything you do with Subbu.")}
  <div class="duo-stats">${[["tasks",D.tasks.filter(x=>x.status==="open").length,"Open tasks"],["requests",D.requests.filter(x=>x.status==="new").length,"New requests"],["notifications",duoUnread(),"Notifications"]].map(([a,n,label])=>`<button data-action="view" data-view="${a}"><strong>${n}</strong>${label} ↗</button>`).join("")}</div>
- <div class="duo-simple-links"><button data-action="view" data-view="vision">✧ Explore Charitha’s 2027 vision board</button><button data-action="view" data-view="tasks">✎ Assign a little task to Subbu</button><button data-action="view" data-view="requests">♡ Read Subbu's requests</button><button data-action="view" data-view="messages">✉ Leave a message</button></div></section>`;
+ <div class="duo-simple-links"><button data-action="view" data-view="vision">✧ Peek at her dream highlights</button><button data-action="view" data-view="tasks">✎ Assign a little task to Subbu</button><button data-action="view" data-view="requests">♡ Read Subbu's requests</button><button data-action="view" data-view="messages">✉ Leave a message</button></div></section>`;
  if(v==="tasks"){
   const maker=kt?`<div class="duo-panel"><h2>Assign Subbu a task ♡</h2>
     <form data-duo-form="task"><label class="form-label">Task title</label><input class="field" name="title" maxlength="150" required placeholder="Give these photos a title and write your message">
@@ -68,7 +68,7 @@ export function duoView(v){
  if(v==="notifications")return `<section class="duo-center">${heading("NOTIFICATION CENTER","Your little updates. ♡","A separate notification center for you.")}<div class="duo-form-row">${refresh}<button class="duo-text-button" data-duo-action="read-all">Mark all read</button></div>
  ${D.notifications.map(n=>`<button type="button" class="duo-notification ${n.read_at?"read":""}" data-duo-action="notice" data-id="${n.id}" data-section="${esc(n.section)}"><span>${n.read_at?"○":"●"}</span><span><b>${esc(n.heading)}</b><small>${esc(n.detail)}</small><em>${date(n.created_at)}</em></span><span>↗</span></button>`).join("")||empty("All caught up. ♡")}</section>`;
  if(v==="more")return `<section class="duo-center">${heading("YOUR SPACE","More little corners. ♡","Everything else is one tap away.")}<div class="duo-more">
- ${[["gallery","Memories","▧"],["songs","Our songs","♫"],["notes","Notes","✎"],["vision","Vision Board 2027","✧"],["birth-story","Birthday home","♡"],["birthday","Birthday letter","✉"]].map(([v,name,icon])=>`<button data-action="view" data-view="${v}"><span>${icon}</span>${name} ↗</button>`).join("")}</div>
+ ${[["gallery","Memories","▧"],["songs","Our songs","♫"],["notes","Notes","✎"],["vision",kt?"Her Dreams · Overview":"My Vision Board 2027","✧"],["birth-story","Birthday home","♡"],["birthday","Birthday letter","✉"]].map(([v,name,icon])=>`<button data-action="view" data-view="${v}"><span>${icon}</span>${name} ↗</button>`).join("")}</div>
  <button class="duo-text-button" data-action="signout">Sign out</button></section>`;
  return "";
 }
