@@ -1,7 +1,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0?bundle";
 import { duoInit, duoLoad, duoView, duoOpen, duoClick, duoSubmit, duoUnread, duoClear } from "./duo.js?v=duo-20261102-v2";
-import { visionInit, visionLoad, visionView, visionClick, visionSubmit, visionClear, visionCount } from "./vision.js?v=vision-20261102-b";
+import { visionInit, visionLoad, visionView, visionClick, visionSubmit, visionClear, visionCount } from "./vision.js?v=vision-20261102-private";
 
 const supabase = createClient(
   "https://mmheljndcdhzzuobjaxz.supabase.co",
@@ -186,7 +186,7 @@ function nav() {
   ["tasks","☑","Tasks"],["requests","♡","Requests"],
   ["messages","✉","Messages"],["notifications","♧","Alerts"],["more","☰","More"],
   ["gallery","▧","Memories"],["songs","♫","Our songs"],["notes","✎","Notes"],
-  ["vision","✧","Vision Board 2027"],["birthday","♡","Birthday letter"]
+  ["vision","✧",state.role==="kittu"?"Her Dreams · Overview":"My Vision Board 2027"],["birthday","♡","Birthday letter"]
  ];
  return `<aside class="sidebar duo-sidebar">
   <div class="sidebar-brand">our little space <span>♡</span></div>
@@ -263,9 +263,12 @@ function home() {
     ${compatibilityBlock()}
     <section class="vision-home-teaser">
       <span class="eyebrow">DREAM IT · SEE IT · MAKE IT HAPPEN</span>
-      <h2>Your <em>Vision Board 2027</em> ✨</h2>
-      <p>A little home for all the things you want to do, become, visit and have. Every big dream begins with a tiny wish.</p>
-      <button class="button button-dark" data-action="view" data-view="vision">Make your 2027 vision board ♡</button>
+      <h2>${state.role==="kittu"?"Her":"Your"} <em>Vision Board 2027</em> ✨</h2>
+      <p>${state.role==="kittu"?
+        "Charitha gets to write her own dreams. Your part is to cheer her on as they come true. ♡":
+        "A little home for all the things you want to do, become, visit and have. Every big dream begins with a tiny wish."}</p>
+      <button class="button button-dark" data-action="view" data-view="vision">${state.role==="kittu"?
+        "See her dream highlights ♡":"Make your 2027 vision board ♡"}</button>
     </section>
     <section class="birthday-last-note"><p>I'll keep celebrating this birthday until the next one. And then that one, too.</p>
       <button class="button button-light" data-action="view" data-view="birthday">Keep this birthday letter ♡</button></section>
