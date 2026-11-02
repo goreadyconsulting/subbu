@@ -8,12 +8,12 @@ root.hidden = true;
 root.setAttribute("aria-label", "Kitteshwar assistant");
 root.innerHTML = `
   <button id="catbot-launch" type="button" aria-expanded="false" aria-controls="catbot-panel" aria-label="Chat with Kitteshwar">
-    <img src="./assets/sir-meowsalot.svg" alt="Tiny cat knight holding a sword">
+    <img src="./assets/sir-meowsalot.webp?v=original-20261102" alt="Tiny cat knight holding a sword">
     <span class="catbot-twinkle" aria-hidden="true">✦</span>
   </button>
   <section id="catbot-panel" role="dialog" aria-label="Kitteshwar chat" aria-modal="false" hidden>
     <div class="catbot-header">
-      <img src="./assets/sir-meowsalot.svg" alt="" class="catbot-head-avatar">
+      <img src="./assets/sir-meowsalot.webp?v=original-20261102" alt="" class="catbot-head-avatar">
       <div class="catbot-heading"><strong>Kitteshwar</strong>
         <small>your tiny cat-knight companion ♡</small></div>
       <button type="button" id="catbot-close" aria-label="Close chat">×</button>
@@ -35,6 +35,16 @@ root.innerHTML = `
   </section>
 `;
 document.body.appendChild(root);
+// Older browsers can fall back to an SVG if the restored original WebP fails.
+root.querySelectorAll('img[src*="sir-meowsalot.webp"]').forEach(img => {
+  img.addEventListener("error", () => {
+    if (!img.dataset.fallbackTried) {
+      img.dataset.fallbackTried = "true";
+      img.src = "./assets/sir-meowsalot.svg";
+    }
+  });
+});
+
 const launch = root.querySelector("#catbot-launch");
 const panel = root.querySelector("#catbot-panel");
 const close = root.querySelector("#catbot-close");
@@ -130,7 +140,7 @@ async function sendMessage(text) {
     const details = error?.message || "Kitteshwar couldn't reach the AI service just now.";
     const friendly = !window.CharithaAssistant?.userRole || window.CharithaAssistant.userRole() === "kittu"
       ? details
-      : /GEMINI_API_KEY|CAT_SHARED_SECRET|script properties|setup/i.test(details)
+      : /GEMINI_API_KEY|API key|setup/i.test(details)
         ? "Kitteshwar's AI connection is being set up. Please try again a little later. ♡" : details;
     addMessage(friendly, "notice");
   } finally {
