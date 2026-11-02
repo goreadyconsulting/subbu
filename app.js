@@ -6,7 +6,7 @@ import { visionInit, visionLoad, visionView, visionClick, visionSubmit, visionCl
 const supabase = createClient(
   "https://mmheljndcdhzzuobjaxz.supabase.co",
   "sb_publishable_r0_1AHq4VCNCcjRwJnFJeQ_eHSmnX3d",
-  { auth: { persistSession: false, autoRefreshToken: true, detectSessionInUrl: false } }
+  { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } }
 );
 const app = document.getElementById("app");
 const modalRoot = document.getElementById("modal-root");
@@ -513,7 +513,7 @@ function birthday() {
   </section>`;
 }
 function render() {
-  if (state.loading) { document.title = "Private Space"; app.innerHTML = '<div class="loading-screen"><div class="loading-flower">✳</div><p>Opening private space…</p></div>'; return; }
+  if (state.loading) { document.title = "Private Space"; app.innerHTML = "<div class=\"loading-screen\" role=\"status\" aria-label=\"Opening private space\">\n    <div class=\"loading-hearts\" aria-hidden=\"true\"><span class=\"loading-heart\"></span><span class=\"loading-heart\"></span><span class=\"loading-heart\"></span></div>\n    <span class=\"loading-sr-only\">Opening private space</span>\n  </div>"; return; }
   if (!state.session) { document.title = "Private Space"; app.innerHTML = loginPage(); return; }
   if (!state.owner) { app.innerHTML = `<main class="auth-page"><div class="auth-card"><h1>Private access</h1><p>This account has not been added to this space yet.</p><button class="button button-dark" data-action="signout">Sign out</button></div></main>`; return; }
   document.title = state.role==="kittu"?"Kittu · Private Admin":"Charitha\u0027s Space ♡";
@@ -946,8 +946,23 @@ window.CharithaAssistant={
   userRole(){return state.role;},
   currentUserId(){return state.session?.user?.id||null;}
 };
-supabase.auth.onAuthStateChange((_event, session) => {
-  setTimeout(() => syncSession(session), 0);
+// Supabase restores the locally saved session before INITIAL_SESSION fires.
+// Use that one event as the startup source of truth: never flash the login page
+// while refresh tokens are being loaded, and never re-fetch private content just
+// because Supabase rotated an access token.
+supabase.auth.onAuthStateChange((event, session) => {
+  setTimeout(() => {
+    const incomingId = session?.user?.id || null;
+    const currentId = state.session?.user?.id || null;
+    if (!state.loading && incomingId && incomingId === currentId &&
+        (event === "TOKEN_REFRESHED" || event === "USER_UPDATED" ||
+         event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
+      state.session = session;
+      return;
+    }
+    // Initial loading and account changes are verified via site_members.
+    // Explicit sign out is the only normal path that clears a saved login.
+    if (!state.loading && !incomingId && !currentId && event === "SIGNED_OUT") return;
+    void syncSession(session);
+  }, 0);
 });
-supabase.auth.getSession().then(({ data }) => syncSession(data.session))
-  .catch(err => { state.loading = false; toast(err.message); render(); });
