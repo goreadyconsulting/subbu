@@ -53,25 +53,21 @@ Online photo suggestions are from Wikimedia Commons and preserve author/license/
 
 Kitteshwar is the cat-knight companion for both private accounts. The user sees a separate welcome message as Subbu or Kittu, and chat history is discarded when accounts change.
 
-The **preferred setup** is Supabase direct Gemini:
-1. Create or locate a Gemini API key in [Google AI Studio](https://aistudio.google.com/app/apikey).
-2. Open [Supabase Edge Functions secrets](https://supabase.com/dashboard/project/mmheljndcdhzzuobjaxz/functions/secrets).
-3. Add the secret `GEMINI_API_KEY` with the Gemini API key as the value.
-4. Optional: add `GEMINI_MODEL` with a supported Gemini model ID, e.g. `gemini-3.8-flash`. If omitted, `gemini-3.5-flash-lite` is the default (a valid stable Flash-Lite model).
-5. Sign back in and send a test message in Kitteshwar.
+Kitteshwar uses **Supabase Edge Functions → Gemini**. Gemini credentials are held only in Supabase server-side secrets, never in browser code or GitHub.
 
-The deployed private Edge Function `charitha-cat` authenticates both approved members; it reads the Gemini key only from server-side secrets, never frontend JavaScript. It calls the Gemini API directly if `GEMINI_API_KEY` is present.
+- Edge Function: `charitha-cat`
+- Required secret: `GEMINI_API_KEY` in [Supabase Edge Functions secrets](https://supabase.com/dashboard/project/mmheljndcdhzzuobjaxz/functions/secrets)
+- Optional secret: `GEMINI_MODEL` to change the model
+- Approved user access: signed-in members of `site_members` only
+- Chat history is local to the current session and clears when accounts change.
 
-The pre-existing Apps Script proxy continues to work as a fallback **only if** the deployed Apps Script has the Script Properties `GEMINI_API_KEY` and `CAT_SHARED_SECRET`. The source template is in `apps-script/Code.gs`; editing GitHub alone does not update the deployed Google Apps Script. Those properties belong to the specific Apps Script project—not to a user's other Apps Script projects. The live script previously returned `Brain isn't configured yet`, showing that one or both properties were missing.
-
-Do not paste Gemini keys or shared secrets into the GitHub repository, messages, or HTML files.
+The original cat-knight artwork is `assets/sir-meowsalot.webp`, used for both the floating chat icon and chat header. A vector fallback is kept for browsers that cannot display WebP.
 
 ## Project files
 - `index.html`, `styles.css`, `app.js`: site + private data
 - `assistant.js`, `assistant.css`: cat-knight chatbot
 - `duo.js`, `duo.css`: tasks, requests, direct messages, notifications and sealed memory exchanges
-- `assets/sir-meowsalot.webp`: generated knight-cat mascot; SVG fallback also included
-- `apps-script/Code.gs`: copy-paste backend without any API keys
+- `assets/sir-meowsalot.webp`: original Kitteshwar cat-knight artwork; SVG fallback for older browsers
 - `supabase/schema.sql`: original database schema; later migrations applied in Supabase
 
-Personal notes/photos, chat auth tokens, the Gemini API key, and the shared secret should **never** be committed to this public repository.
+Personal notes/photos, chat auth tokens, and the Gemini API key should **never** be committed to this public repository.
