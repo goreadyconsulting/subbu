@@ -187,7 +187,7 @@ function nav() {
   ["messages","✉","Messages"],["notifications","♧","Alerts"],["more","☰","More"],
   ["gallery","▧","Memories"],["songs","♫","Our songs"],["notes","✎","Notes"],
   ["vision","✧",state.role==="kittu"?"Her Dreams · Overview":"My Vision Board 2027"],["birthday","♡","Birthday letter"]
- ];
+ ].filter(([view])=>state.role!=="kittu" || ["home","tasks","requests","messages","notifications","more","gallery","vision"].includes(view));
  return `<aside class="sidebar duo-sidebar">
   <div class="sidebar-brand">our little space <span>♡</span></div>
   <div class="sidebar-caption">${state.role==="kittu"?"Kittu · Admin":"Subbu · Her space"}</div>
@@ -516,7 +516,8 @@ function render() {
   if (state.loading) { document.title = "Private Space"; app.innerHTML = '<div class="loading-screen"><div class="loading-flower">✳</div><p>Opening private space…</p></div>'; return; }
   if (!state.session) { document.title = "Private Space"; app.innerHTML = loginPage(); return; }
   if (!state.owner) { app.innerHTML = `<main class="auth-page"><div class="auth-card"><h1>Private access</h1><p>This account has not been added to this space yet.</p><button class="button button-dark" data-action="signout">Sign out</button></div></main>`; return; }
-  document.title = "Charitha\u0027s Space ♡";
+  document.title = state.role==="kittu"?"Kittu · Private Admin":"Charitha\u0027s Space ♡";
+  if(state.role==="kittu" && !["home","tasks","requests","messages","notifications","more","gallery","vision"].includes(state.view))state.view="home";
   const views = {home:()=>state.role==="kittu"?duoView("dashboard"):home(),gallery,songs,notes,vision:visionView,birthday,"birth-story":home,tasks:()=>duoView("tasks"),requests:()=>duoView("requests"),messages:()=>duoView("messages"),notifications:()=>duoView("notifications"),more:()=>duoView("more")};
   const body = (views[state.view] || home)();
   app.innerHTML = `<div class="shell">${nav()}<main class="content">${topbar()}${body}</main></div>`;
