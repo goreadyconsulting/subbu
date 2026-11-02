@@ -71,8 +71,34 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .bottom-letter{display:flex;align-items:center;justify-content:space-between;gap:20px;border-top:1px solid var(--line);padding:44px 0 60px}
 .bottom-letter p{margin:0;color:#82747a;font:400 17px var(--hand)}
 .footer{display:flex;align-items:center;justify-content:space-between;padding:28px 0;font-size:11px;color:#aaa0a2;letter-spacing:.06em;border-top:1px solid var(--line)}
-.loading-screen{min-height:100vh;display:grid;place-content:center;text-align:center;color:#ab8690}
-.loading-flower{font-size:66px;animation:sway 3s ease-in-out infinite}
+/* Minimal three-heart splash while an existing private session restores. */
+.loading-screen{
+  min-height:100vh;min-height:100dvh;display:grid;place-items:center;
+  background:#faf6f0;
+}
+.loading-hearts{height:64px;display:flex;align-items:center;justify-content:center;gap:17px;overflow:visible}
+.loading-heart{
+  display:block;position:relative;width:16px;height:16px;
+  background:#d99cab;border-radius:1px;
+  transform:translateY(0) rotate(-45deg);
+  animation:heart-hop 1.18s ease-in-out infinite;
+}
+.loading-heart::before,.loading-heart::after{
+  content:"";display:block;position:absolute;width:16px;height:16px;
+  border-radius:50%;background:inherit;
+}
+.loading-heart::before{left:0;top:-8px}
+.loading-heart::after{left:8px;top:0}
+.loading-heart:nth-child(2){animation-delay:.16s;background:#c9859c}
+.loading-heart:nth-child(3){animation-delay:.32s;background:#b97895}
+@keyframes heart-hop{
+  0%,60%,100%{transform:translateY(0) rotate(-45deg);opacity:.65}
+  27%{transform:translateY(-13px) rotate(-45deg);opacity:1}
+}
+.loading-sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(prefers-reduced-motion:reduce){
+  .loading-heart{animation:none;opacity:1}
+}
 .auth-page,.claim-page{min-height:100vh;display:grid;place-items:center;padding:38px 20px;background:radial-gradient(circle at top left,#f8d9d7,transparent 40%),radial-gradient(circle at bottom right,#e6dfee,transparent 42%),var(--paper)}
 .auth-card{background:#fffdfb;max-width:460px;width:100%;border:1px solid #f0e2db;border-radius:28px;padding:43px;box-shadow:var(--shadow);text-align:center}
 .auth-icon{font-size:55px;color:#d696a4;line-height:1;margin-bottom:12px}
