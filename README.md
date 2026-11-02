@@ -15,7 +15,7 @@ The site is published from `main` using `.github/workflows/deploy.yml`.
 - Two separate roles: Subbu (personal birthday space, assigned tasks, requests) and Kittu (admin, assignment and responses)
 - Individual Task, Request, Message and Notification centers with Supabase Row Level Security
 - Photo/video tiles display no titles. Each member can independently write a title and message, and the two sealed messages reveal together only after both submit.
-- **Sir Meowsalot**, a cute sword-bearing cat knight chatbot, shown only to approved members
+- **Kitteshwar**, a cute sword-bearing cat knight chatbot, shown only to approved members
 
 ## Supabase
 Project: `mmheljndcdhzzuobjaxz`
@@ -49,21 +49,22 @@ The board is **owned by Charitha (Subbu)**. She alone can view or change the com
 
 Online photo suggestions are from Wikimedia Commons and preserve author/license/source attribution. External image availability can change; private uploads are preferred for permanent memories.
 
-## Gemini cat assistant — your remaining Apps Script step
-The frontend and private Supabase Edge Function `charitha-cat` are deployed. The Gemini API key is never kept in GitHub.
+## Kitteshwar — private Gemini AI assistant
 
-1. In Google Apps Script, replace `Code.gs` with the contents of [apps-script/Code.gs](./apps-script/Code.gs).
-2. Open **Project settings → Script properties** and set:
-   - `GEMINI_API_KEY`: your Gemini API key
-   - `CAT_SHARED_SECRET`: the private shared secret provided in our ChatGPT conversation
-   - `GEMINI_MODEL` (optional): default `gemini-3.8-flash`; change to a model your Gemini key can access
-3. Deploy as **Web app → Execute as Me → Who has access: Anyone**. This is safe only with the shared secret check in the provided code.
-4. Give the resulting `https://script.google.com/macros/s/.../exec` URL to ChatGPT. It will be saved server-side to `public.cat_assistant_settings.apps_script_url` in Supabase.
-5. The cat will start answering after the URL is configured. No frontend changes are needed.
+Kitteshwar is the cat-knight companion for both private accounts. The user sees a separate welcome message as Subbu or Kittu, and chat history is discarded when accounts change.
 
-The chat is sent to a **Supabase Edge Function** which checks membership in the private site, then forwards a limited conversation to Apps Script. The Edge Function adds the matching secret; Apps Script calls Gemini. Google Apps Script ContentService redirects are followed by the Edge Function, avoiding browser cross-origin problems.
+The **preferred setup** is Supabase direct Gemini:
+1. Create or locate a Gemini API key in [Google AI Studio](https://aistudio.google.com/app/apikey).
+2. Open [Supabase Edge Functions secrets](https://supabase.com/dashboard/project/mmheljndcdhzzuobjaxz/functions/secrets).
+3. Add the secret `GEMINI_API_KEY` with the Gemini API key as the value.
+4. Optional: add `GEMINI_MODEL` with value `gemini-3.5-flash`. If omitted, `gemini-3.5-flash` is the default.
+5. Sign back in and send a test message in Kitteshwar.
 
-The Google Apps Script deployment URL is stored in Supabase settings and is not published in the GitHub source.
+The deployed private Edge Function `charitha-cat` authenticates both approved members; it reads the Gemini key only from server-side secrets, never frontend JavaScript. It calls the Gemini API directly if `GEMINI_API_KEY` is present.
+
+The pre-existing Apps Script proxy continues to work as a fallback **only if** the deployed Apps Script has the Script Properties `GEMINI_API_KEY` and `CAT_SHARED_SECRET`. The source template is in `apps-script/Code.gs`; editing GitHub alone does not update the deployed Google Apps Script. Those properties belong to the specific Apps Script project—not to a user's other Apps Script projects. The live script previously returned `Brain isn't configured yet`, showing that one or both properties were missing.
+
+Do not paste Gemini keys or shared secrets into the GitHub repository, messages, or HTML files.
 
 ## Project files
 - `index.html`, `styles.css`, `app.js`: site + private data
