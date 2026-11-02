@@ -1,6 +1,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0?bundle";
 import { duoInit, duoLoad, duoView, duoOpen, duoClick, duoSubmit, duoUnread, duoClear } from "./duo.js?v=duo-20261102-v2";
+import { visionInit, visionLoad, visionView, visionClick, visionSubmit, visionClear, visionCount } from "./vision.js?v=vision-20261102";
 
 const supabase = createClient(
   "https://mmheljndcdhzzuobjaxz.supabase.co",
@@ -185,7 +186,7 @@ function nav() {
   ["tasks","☑","Tasks"],["requests","♡","Requests"],
   ["messages","✉","Messages"],["notifications","♧","Alerts"],["more","☰","More"],
   ["gallery","▧","Memories"],["songs","♫","Our songs"],["notes","✎","Notes"],
-  ["activities","☼","Daily rituals"],["birthday","♡","Birthday letter"]
+  ["vision","✧","Vision Board 2027"],["birthday","♡","Birthday letter"]
  ];
  return `<aside class="sidebar duo-sidebar">
   <div class="sidebar-brand">our little space <span>♡</span></div>
@@ -260,6 +261,12 @@ function home() {
         : "An artistic fallback while your Stellarium skies are being prepared."}</p>
     </section>
     ${compatibilityBlock()}
+    <section class="vision-home-teaser">
+      <span class="eyebrow">DREAM IT · SEE IT · MAKE IT HAPPEN</span>
+      <h2>Your <em>Vision Board 2027</em> ✨</h2>
+      <p>A little home for all the things you want to do, become, visit and have. Every big dream begins with a tiny wish.</p>
+      <button class="button button-dark" data-action="view" data-view="vision">Make your 2027 vision board ♡</button>
+    </section>
     <section class="birthday-last-note"><p>I'll keep celebrating this birthday until the next one. And then that one, too.</p>
       <button class="button button-light" data-action="view" data-view="birthday">Keep this birthday letter ♡</button></section>
   </section>`;
@@ -507,7 +514,7 @@ function render() {
   if (!state.session) { document.title = "Private Space"; app.innerHTML = loginPage(); return; }
   if (!state.owner) { app.innerHTML = `<main class="auth-page"><div class="auth-card"><h1>Private access</h1><p>This account has not been added to this space yet.</p><button class="button button-dark" data-action="signout">Sign out</button></div></main>`; return; }
   document.title = "Charitha\u0027s Space ♡";
-  const views = {home:()=>state.role==="kittu"?duoView("dashboard"):home(),gallery,songs,notes,activities,birthday,"birth-story":home,tasks:()=>duoView("tasks"),requests:()=>duoView("requests"),messages:()=>duoView("messages"),notifications:()=>duoView("notifications"),more:()=>duoView("more")};
+  const views = {home:()=>state.role==="kittu"?duoView("dashboard"):home(),gallery,songs,notes,vision:visionView,birthday,"birth-story":home,tasks:()=>duoView("tasks"),requests:()=>duoView("requests"),messages:()=>duoView("messages"),notifications:()=>duoView("notifications"),more:()=>duoView("more")};
   const body = (views[state.view] || home)();
   app.innerHTML = `<div class="shell">${nav()}<main class="content">${topbar()}${body}</main></div>`;
 }
@@ -627,14 +634,14 @@ async function loadData() {
   state.photoUrls = Object.fromEntries(signed);
   const failed = signed.filter(([, url]) => !url);
   if (failed.length) toast("A few photos couldn't load. Tap Refresh in Memories to retry.");
-  await duoLoad();
+  await Promise.allSettled([duoLoad(),visionLoad()]);
   render();
 }
 async function syncSession(session) {
   const revision = ++identityRevision;
   state.session = session;
   if (!session) {
-    state.owner = false; state.role = null; duoClear(); state.loading = false; state.view = "login";
+    state.owner = false; state.role = null; duoClear(); visionClear(); state.loading = false; state.view = "login";
     state.notes = []; state.photos = []; state.photoRecords = []; state.activities = []; state.logs = []; state.photoUrls = {}; state.letter = ""; state.songs = []; state.songIndex = -1; state.birthdaySongUrl = ""; state.birthSkyUrls = {}; state.birthSkySelection = "art";
     render(); return;
   }
@@ -763,6 +770,8 @@ async function toggleActivity(id, day) {
   render();
 }
 document.addEventListener("click", async e => {
+  const visionTarget=e.target.closest("[data-vision]");
+  if(visionTarget){try{await visionClick(visionTarget);}catch(err){toast(err.message||"Couldn't update the vision board.");}return;}
   const duoTarget=e.target.closest("[data-duo-action]");
   if(duoTarget){try{await duoClick(duoTarget);}catch(err){toast(err.message||"Could not update.");}return;}
   if (e.target.closest("[data-overlay]") && !e.target.closest(".modal")) { closeModal(); return; }
@@ -792,6 +801,7 @@ document.addEventListener("click", async e => {
     else if (action === "view") {
       state.view = target.dataset.view;
       if (["home","tasks","requests","messages","notifications","more"].includes(state.view)) await duoLoad();
+      if (state.view==="vision") {try{await visionLoad();}catch(err){toast(err.message||"Could not refresh vision board.");}}
       render();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -812,6 +822,7 @@ document.addEventListener("click", async e => {
   } catch (err) { toast(err.message || "Something went wrong. Please try again."); }
 });
 document.addEventListener("change", async e => {
+  if (e.target.matches("[data-vision-file]")) return;
   if (e.target.matches("input[type=file]")) {
     const files = Array.from(e.target.files || []);
     e.target.value = "";
@@ -822,6 +833,12 @@ document.addEventListener("change", async e => {
   }
 });
 document.addEventListener("submit", async e => {
+  const visionForm=e.target.closest("[data-vision-form]");
+  if(visionForm){e.preventDefault();const btn=visionForm.querySelector("[type=submit]");
+    if(btn?.disabled)return;if(btn)btn.disabled=true;
+    try{await visionSubmit(visionForm,new FormData(visionForm));}
+    catch(err){toast(err.message||"The dream couldn't be saved. Try again.");}
+    finally{if(btn?.isConnected)btn.disabled=false;}return;}
   const duoForm=e.target.closest("[data-duo-form]");
   if(duoForm){e.preventDefault();const btn=duoForm.querySelector("[type=submit]");if(btn?.disabled)return;if(btn)btn.disabled=true;
     try{await duoSubmit(duoForm,new FormData(duoForm));}catch(err){toast(err.message||"Please try again.");}finally{if(btn?.isConnected)btn.disabled=false;}return;}
@@ -917,6 +934,7 @@ document.addEventListener("ended",e=>{
   }
 },true);
 duoInit({supabase,state,esc,openModal,render,toast});
+visionInit({supabase,state,esc,openModal,closeModal,render,toast});
 window.CharithaAssistant={
   async accessToken(){const {data}=await supabase.auth.getSession();return data.session?.access_token||null;},
   isOwner(){return Boolean(state.owner && state.session);},
