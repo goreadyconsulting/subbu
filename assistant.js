@@ -44,9 +44,21 @@ const form = root.querySelector("#catbot-form");
 const sendButton = root.querySelector("#catbot-send");
 let busy = false;
 let chatHistory = [];
+let activeVisitor = null;
 const ownerIsReady = () => Boolean(window.CharithaAssistant?.isOwner?.());
 function syncVisibility() {
   const shouldShow = ownerIsReady();
+  const visitor = shouldShow ? (window.CharithaAssistant?.currentUserId?.() || null) : null;
+  if (visitor !== activeVisitor) {
+    activeVisitor = visitor;
+    chatHistory = [];
+    messages.replaceChildren();
+    const greeting = window.CharithaAssistant?.userRole?.() === "kittu"
+      ? "Hi Kittu! I'm Kitteshwar 🐾 Ready to help with little surprises, thoughtful messages, and all the ways you support Subbu. ♡"
+      : "Hi Subbu! I'm Kitteshwar 🐾 Your little cat-knight is here for dreams, plans, questions, and everything in between. ♡";
+    addMessage(greeting, "bot");
+    input.value = "";
+  }
   root.hidden = !shouldShow;
   if (!shouldShow) {
     panel.hidden = true;
@@ -115,7 +127,12 @@ async function sendMessage(text) {
     chatHistory = chatHistory.slice(-10);
   } catch (error) {
     wait.remove();
-    addMessage(error?.message || "Kitteshwar couldn't reach the AI service just now.", "notice");
+    const details = error?.message || "Kitteshwar couldn't reach the AI service just now.";
+    const friendly = !window.CharithaAssistant?.userRole || window.CharithaAssistant.userRole() === "kittu"
+      ? details
+      : /GEMINI_API_KEY|CAT_SHARED_SECRET|script properties|setup/i.test(details)
+        ? "Kitteshwar's AI connection is being set up. Please try again a little later. ♡" : details;
+    addMessage(friendly, "notice");
   } finally {
     busy = false;
     sendButton.disabled = false;
