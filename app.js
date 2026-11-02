@@ -979,7 +979,7 @@ duoInit({supabase,state,esc,openModal,render,toast});
 visionInit({supabase,state,esc,openModal,closeModal,render,toast});
 window.CharithaAssistant={
   async accessToken(){const {data}=await supabase.auth.getSession();return data.session?.access_token||null;},
-  isOwner(){return Boolean(state.owner && state.session);},
+  isOwner(){return Boolean(state.owner && state.session && !state.loading);},
   currentPage(){return state.view;},
   userRole(){return state.role;},
   currentUserId(){return state.session?.user?.id||null;}
