@@ -28,7 +28,7 @@ jobs:
       - name: Prepare public site
         run: |
           mkdir -p _site
-          cp index.html app.js styles.css assistant.js assistant.css duo.js duo.css _site/
+          cp index.html app.js styles.css assistant.js assistant.css duo.js duo.css vision.js vision.css _site/
           mkdir -p _site/assets
           cp assets/sir-meowsalot.svg assets/sir-meowsalot.webp assets/charitha-birth-sky.svg _site/assets/
           touch _site/.nojekyll
