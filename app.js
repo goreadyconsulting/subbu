@@ -1,7 +1,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0?bundle";
-import { duoInit, duoLoad, duoView, duoOpen, duoClick, duoSubmit, duoUnread, duoClear } from "./duo.js?v=duo-20261102-v2";
-import { visionInit, visionLoad, visionView, visionClick, visionSubmit, visionClear, visionCount } from "./vision.js?v=vision-20261102-private";
+import { duoInit, duoLoad, duoView, duoOpen, duoClick, duoSubmit, duoUnread, duoClear } from "./duo.js?v=duo-20261102-supporter";
+import { visionInit, visionLoad, visionView, visionClick, visionSubmit, visionClear, visionCount } from "./vision.js?v=vision-20261102-supporter";
 
 const supabase = createClient(
   "https://mmheljndcdhzzuobjaxz.supabase.co",
