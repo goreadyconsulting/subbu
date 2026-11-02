@@ -1,5 +1,5 @@
 
-/* Sir Meowsalot, your tiny knight */
+/* Kitteshwar, the private cat-knight companion */
 #catbot-root[hidden],#catbot-panel[hidden]{display:none!important}
 #catbot-root{position:fixed;bottom:22px;right:22px;z-index:120;pointer-events:none}
 #catbot-launch,#catbot-panel{pointer-events:auto}
