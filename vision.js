@@ -78,6 +78,8 @@ function allowedUrl(url,host){
 async function searchCommons(query){
  let q=String(query||"").trim().slice(0,110);
  if(!q)return [];
+ // Help with common spelling variations: "sokda car" is a Škoda car.
+ q=q.replace(/\bsokda\b/gi,"Skoda").replace(/škoda/gi,"Skoda");
  const params=new URLSearchParams({
    action:"query",format:"json",formatversion:"2",generator:"search",
    gsrsearch:q+" filetype:bitmap",gsrnamespace:"6",gsrlimit:"20",
