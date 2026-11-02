@@ -942,7 +942,9 @@ visionInit({supabase,state,esc,openModal,closeModal,render,toast});
 window.CharithaAssistant={
   async accessToken(){const {data}=await supabase.auth.getSession();return data.session?.access_token||null;},
   isOwner(){return Boolean(state.owner && state.session);},
-  currentPage(){return state.view;}
+  currentPage(){return state.view;},
+  userRole(){return state.role;},
+  currentUserId(){return state.session?.user?.id||null;}
 };
 supabase.auth.onAuthStateChange((_event, session) => {
   setTimeout(() => syncSession(session), 0);
